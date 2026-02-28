@@ -1,7 +1,11 @@
 import osmnx as ox
 import networkx as nx
+import numpy as np
 from itertools import islice
+import matplotlib.pyplot as plt
 from collections import Counter
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 place = "Dhaka, Bangladesh"   # change this
 G = ox.graph_from_place(place, network_type="walk")
@@ -85,10 +89,6 @@ for i, r in enumerate(routes):
 
 route_texts[0]
 
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-
 model = SentenceTransformer("all-MiniLM-L6-v2")  # strong + fast baseline
 
 user_pref = "calm walk, avoid busy roads, prefer footpaths and parks, fewer major roads"
@@ -105,3 +105,9 @@ for rank, idx in enumerate(topk, 1):
     m = route_meta[idx]
     print(f"{rank}) Route {idx}: score={scores[idx]:.3f}, dist={m['dist_m']/1000:.2f} km, major={m['major_pct']:.1f}%")
     print("   ", route_texts[idx])
+
+best_idx = int(topk[0])
+best_route = routes[best_idx]
+
+fig, ax = ox.plot_graph_route(G, best_route, route_linewidth=4, node_size=0, bgcolor="white")
+plt.show()
