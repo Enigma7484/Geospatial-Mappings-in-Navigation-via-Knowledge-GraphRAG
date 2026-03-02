@@ -9,9 +9,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 place = "Dhaka, Bangladesh"   # change this
 G = ox.graph_from_place(place, network_type="walk")
-
 # Make sure edge lengths exist (meters)
-G = ox.add_edge_lengths(G)
+G = ox.distance.add_edge_lengths(G)
 
 print("Nodes:", len(G.nodes), "Edges:", len(G.edges))
 
@@ -26,18 +25,19 @@ dest_node = ox.distance.nearest_nodes(G, X=dest_point[1], Y=dest_point[0])
 
 orig_node, dest_node
 
-def k_shortest_paths(G, source, target, k=10, weight="length"):
-    # shortest_simple_paths returns paths ordered by total weight
-    paths = nx.shortest_simple_paths(G, source, target, weight=weight)
-    return list(islice(paths, k))
-
-routes = k_shortest_paths(G, orig_node, dest_node, k=10, weight="length")
+routes = list(ox.k_shortest_paths(G, orig_node, dest_node, k=10, weight="length"))
 print("Got routes:", len(routes))
 print("Example route length (nodes):", len(routes[0]))
 
 def route_edge_data(G, route):
     # Collect edge attributes along the route
-    edges = ox.utils_graph.get_route_edge_attributes(G, route, attribute=None)
+    edges = []
+    for u, v in zip(route[:-1], route[1:]):
+        edge_data = G.get_edge_data(u, v)
+        if isinstance(edge_data, dict) and 0 in edge_data:
+            edges.append(edge_data[0])
+        else:
+            edges.append(edge_data)
     return edges
 
 def normalize_highway_tag(hwy):
