@@ -1,28 +1,30 @@
 import osmnx as ox
+import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import math
 
 # ----------------------------
-# 1) Inputs
+# 1) Toronto Setup
 # ----------------------------
-orig_address = "Dhaka University, Dhaka"
-dest_address = "Ramna Park, Dhaka"
 
-user_pref = "calm walk, avoid busy roads, prefer footpaths and parks, fewer major roads"
+orig_address = "University of Toronto, Toronto, Canada"
+dest_address = "Nathan Phillips Square, Toronto, Canada"
 
-# How big an area to download around the origin (meters)
-DIST_METERS = 5000
+# Try different prompts later
+user_pref = "prefer scenic calm walk, avoid busy roads, fewer intersections, more residential streets"
 
-# How many candidate routes to generate
+DIST_METERS = 6000
 K_ROUTES = 10
 
 # ----------------------------
-# 2) Build a smaller walking graph (faster + better plots)
+# 2) Build Toronto Walking Graph
 # ----------------------------
-orig_point = ox.geocode(orig_address)  # (lat, lon)
+
+orig_point = ox.geocode(orig_address)
 dest_point = ox.geocode(dest_address)
 
 G = ox.graph_from_point(orig_point, dist=DIST_METERS, network_type="walk")
@@ -33,122 +35,144 @@ print("Nodes:", len(G.nodes), "Edges:", len(G.edges))
 orig_node = ox.distance.nearest_nodes(G, X=orig_point[1], Y=orig_point[0])
 dest_node = ox.distance.nearest_nodes(G, X=dest_point[1], Y=dest_point[0])
 
-# ----------------------------
-# 3) Generate K candidate routes (OSMnx supports MultiDiGraph)
-# ----------------------------
 routes = list(ox.k_shortest_paths(G, orig_node, dest_node, k=K_ROUTES, weight="length"))
 print("Got routes:", len(routes))
-print("Example route length (nodes):", len(routes[0]))
 
 # ----------------------------
-# 4) Feature extraction helpers
+# 3) Feature Extraction
 # ----------------------------
+
 def normalize_highway_tag(hwy):
-    # OSM 'highway' can be a list or string
     if isinstance(hwy, list):
         return hwy[0]
-    return hwy if hwy is not None else "unknown"
+    return hwy if hwy else "unknown"
 
 def route_edge_data_min_len(G, route):
-    """
-    For each consecutive (u,v) pair, pick the edge with the minimum length.
-    This is safe for MultiDiGraph where there can be multiple edges between u and v.
-    """
     edges = []
     for u, v in zip(route[:-1], route[1:]):
         ed = G.get_edge_data(u, v)
-
-        # MultiDiGraph: dict of key -> attr dict
         if isinstance(ed, dict):
             best = min(ed.values(), key=lambda d: d.get("length", float("inf")))
             edges.append(best)
         else:
-            # Non-multigraph (rare here), already attr dict
             edges.append(ed)
     return edges
 
+def count_turns(G, route):
+    turns = 0
+    bearings = []
+
+    for u, v in zip(route[:-1], route[1:]):
+        data = G.get_edge_data(u, v)
+        if isinstance(data, dict):
+            edge = min(data.values(), key=lambda d: d.get("length", float("inf")))
+        else:
+            edge = data
+
+        if "bearing" in edge:
+            bearings.append(edge["bearing"])
+
+    for i in range(1, len(bearings)):
+        diff = abs(bearings[i] - bearings[i-1])
+        if diff > 45:
+            turns += 1
+
+    return turns
+
 def route_features_to_text(G, route):
+
     edges = route_edge_data_min_len(G, route)
 
     total_len = 0.0
+    major_m = 0.0
+    walk_m = 0.0
+    residential_m = 0.0
+    service_m = 0.0
     hwy_counts = Counter()
 
-    major_road_m = 0.0
-    walk_friendly_m = 0.0
-
-    # You can tune these sets later
-    major_set = {"primary", "secondary", "tertiary", "trunk"}  # big roads
-    walk_friendly = {"footway", "path", "pedestrian", "steps", "living_street"}
+    major_set = {"primary", "secondary", "tertiary", "trunk"}
+    walk_set = {"footway", "path", "pedestrian", "steps", "living_street"}
+    residential_set = {"residential"}
+    service_set = {"service"}
 
     for e in edges:
         length = e.get("length", 0.0) or 0.0
         total_len += length
 
-        hwy = normalize_highway_tag(e.get("highway", "unknown"))
+        hwy = normalize_highway_tag(e.get("highway"))
         hwy_counts[hwy] += 1
 
         if hwy in major_set:
-            major_road_m += length
-        if hwy in walk_friendly:
-            walk_friendly_m += length
+            major_m += length
+        if hwy in walk_set:
+            walk_m += length
+        if hwy in residential_set:
+            residential_m += length
+        if hwy in service_set:
+            service_m += length
 
-    major_pct = 100.0 * major_road_m / total_len if total_len > 0 else 0.0
-    walk_pct = 100.0 * walk_friendly_m / total_len if total_len > 0 else 0.0
+    major_pct = 100 * major_m / total_len if total_len else 0
+    walk_pct = 100 * walk_m / total_len if total_len else 0
+    residential_pct = 100 * residential_m / total_len if total_len else 0
+    service_pct = 100 * service_m / total_len if total_len else 0
 
-    top_types = ", ".join([f"{t}" for t, _ in hwy_counts.most_common(4)])
+    intersections = sum(1 for n in route if G.degree[n] > 2)
+    turns = count_turns(G, route)
 
-    # Make the text more discriminative so SBERT can rank routes better
     text = (
         f"Walking route of {total_len/1000:.2f} km. "
-        f"Top ways: {top_types}. "
-        f"{walk_pct:.1f}% on footpaths/paths/pedestrian ways. "
-        f"{major_pct:.1f}% on major roads. "
-        f"Prefer calm routes with more footpaths and fewer major roads."
+        f"{walk_pct:.1f}% on footpaths. "
+        f"{residential_pct:.1f}% residential streets. "
+        f"{service_pct:.1f}% service roads. "
+        f"{major_pct:.1f}% major roads. "
+        f"Approx {intersections} intersections and {turns} turns."
     )
-    return text, total_len, major_pct, walk_pct
+
+    return text, total_len, major_pct, walk_pct, residential_pct, intersections, turns
 
 # ----------------------------
-# 5) Build route descriptions
+# 4) Build Route Descriptions
 # ----------------------------
+
 route_texts = []
 route_meta = []
 
 for i, r in enumerate(routes):
-    txt, dist_m, major_pct, walk_pct = route_features_to_text(G, r)
+    txt, dist_m, major_pct, walk_pct, res_pct, intersections, turns = route_features_to_text(G, r)
     route_texts.append(txt)
     route_meta.append({
         "idx": i,
-        "dist_m": dist_m,
+        "dist_km": dist_m/1000,
         "major_pct": major_pct,
-        "walk_pct": walk_pct
+        "walk_pct": walk_pct,
+        "residential_pct": res_pct,
+        "intersections": intersections,
+        "turns": turns
     })
 
 # ----------------------------
-# 6) SBERT rank routes by preference prompt
+# 5) SBERT Ranking
 # ----------------------------
-model = SentenceTransformer("all-MiniLM-L6-v2")  # strong + fast baseline
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 emb_routes = model.encode(route_texts, normalize_embeddings=True)
 emb_user = model.encode([user_pref], normalize_embeddings=True)
 
 scores = cosine_similarity(emb_user, emb_routes)[0]
-ranking = np.argsort(-scores)  # descending
+ranking = np.argsort(-scores)
 topk = ranking[:5]
 
-print("\nTop-5 ranked routes:")
+print("\nTop Ranked Routes:")
 for rank, idx in enumerate(topk, 1):
     m = route_meta[idx]
-    print(
-        f"{rank}) Route {idx}: score={scores[idx]:.3f}, "
-        f"dist={m['dist_m']/1000:.2f} km, "
-        f"walk_friendly={m['walk_pct']:.1f}%, "
-        f"major={m['major_pct']:.1f}%"
-    )
+    print(f"{rank}) Route {idx} | score={scores[idx]:.3f}")
     print("   ", route_texts[idx])
 
 # ----------------------------
-# 7) Plot the best route
+# 6) Plot Best Route
 # ----------------------------
+
 best_idx = int(topk[0])
 best_route = routes[best_idx]
 
