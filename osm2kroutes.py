@@ -1,11 +1,9 @@
 import osmnx as ox
-import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import math
 
 # ----------------------------
 # 1) Toronto Setup
@@ -29,6 +27,14 @@ dest_point = ox.geocode(dest_address)
 
 G = ox.graph_from_point(orig_point, dist=DIST_METERS, network_type="walk")
 G = ox.distance.add_edge_lengths(G)
+
+# Add bearings (for turn counting)
+try:
+    # newer OSMnx
+    G = ox.bearing.add_edge_bearings(G)
+except Exception:
+    # older OSMnx fallback
+    G = ox.add_edge_bearings(G)
 
 print("Nodes:", len(G.nodes), "Edges:", len(G.edges))
 
@@ -90,9 +96,14 @@ def route_features_to_text(G, route):
     service_m = 0.0
     hwy_counts = Counter()
 
-    major_set = {"primary", "secondary", "tertiary", "trunk"}
-    walk_set = {"footway", "path", "pedestrian", "steps", "living_street"}
-    residential_set = {"residential"}
+    major_set = {"primary", "secondary", "tertiary", "trunk",
+             "primary_link", "secondary_link", "tertiary_link", "trunk_link"}
+
+    walk_set = {"footway", "path", "pedestrian", "steps", "living_street",
+            "cycleway", "track"}
+
+    residential_set = {"residential", "unclassified"}
+
     service_set = {"service"}
 
     for e in edges:
@@ -149,6 +160,14 @@ for i, r in enumerate(routes):
         "intersections": intersections,
         "turns": turns
     })
+
+# Debug: what highway tags are we actually seeing?
+all_types = Counter()
+for r in routes:
+    for e in route_edge_data_min_len(G, r):
+        all_types[normalize_highway_tag(e.get("highway"))] += 1
+
+print("\nTop highway tags seen:", all_types.most_common(15))
 
 # ----------------------------
 # 5) SBERT Ranking
