@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+osmnx
+networkx
+numpy
+geopandas
+shapely
+sentence-transformers
+scikit-learn
+pydantic
