@@ -3,27 +3,29 @@ from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 
 from .schemas import RankRoutesRequest, RankRoutesResponse, RouteResponse
-from .routing import generate_rankable_routes
-from .ranking import rank_route_texts
+
+print("Starting FastAPI app...")
 
 app = FastAPI(title="GeoRoute Preference API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten later for production
+    allow_origins=["*"],  # tighten later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 def root():
-    return {"GeoRoute Preference API is running"}
-
+    return {"message": "GeoRoute Preference API is running"}
 
 @app.post("/rank-routes", response_model=RankRoutesResponse)
 def rank_routes(payload: RankRoutesRequest):
+    # Lazy imports so startup stays light
+    from .routing import generate_rankable_routes
+    from .ranking import rank_route_texts
+
     route_feature_dicts, route_texts = generate_rankable_routes(
         origin=payload.origin,
         destination=payload.destination,
