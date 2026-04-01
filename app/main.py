@@ -10,7 +10,10 @@ app = FastAPI(title="GeoRoute Preference API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten later
+    allow_origins=[
+        "http://localhost:5173",
+        "https://YOUR-FRONTEND.vercel.app",
+    ],  # tighten later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
