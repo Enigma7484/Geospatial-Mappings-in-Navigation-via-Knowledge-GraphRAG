@@ -1,0 +1,112 @@
+{
+  "omar_demo": [
+    {
+      "timestamp": "2026-04-01T08:15:00",
+      "features": {
+        "distance_km": 1.65,
+        "major_pct": 8.0,
+        "walk_pct": 68.0,
+        "residential_pct": 22.0,
+        "service_pct": 2.0,
+        "intersections": 34,
+        "turns": 5,
+        "park_near_pct": 10.0,
+        "safety_score": 1.1,
+        "lit_pct": 4.0,
+        "signal_cnt": 8,
+        "crossing_cnt": 7,
+        "tunnel_m": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-03T17:40:00",
+      "features": {
+        "distance_km": 1.95,
+        "major_pct": 6.0,
+        "walk_pct": 72.0,
+        "residential_pct": 28.0,
+        "service_pct": 1.5,
+        "intersections": 40,
+        "turns": 6,
+        "park_near_pct": 21.0,
+        "safety_score": 1.6,
+        "lit_pct": 12.0,
+        "signal_cnt": 9,
+        "crossing_cnt": 8,
+        "tunnel_m": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-05T18:10:00",
+      "features": {
+        "distance_km": 2.20,
+        "major_pct": 5.0,
+        "walk_pct": 75.0,
+        "residential_pct": 32.0,
+        "service_pct": 1.0,
+        "intersections": 38,
+        "turns": 7,
+        "park_near_pct": 28.0,
+        "safety_score": 1.8,
+        "lit_pct": 15.0,
+        "signal_cnt": 7,
+        "crossing_cnt": 6,
+        "tunnel_m": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-07T08:05:00",
+      "features": {
+        "distance_km": 1.55,
+        "major_pct": 7.0,
+        "walk_pct": 65.0,
+        "residential_pct": 20.0,
+        "service_pct": 3.0,
+        "intersections": 31,
+        "turns": 4,
+        "park_near_pct": 8.0,
+        "safety_score": 1.0,
+        "lit_pct": 3.0,
+        "signal_cnt": 10,
+        "crossing_cnt": 8,
+        "tunnel_m": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-09T19:15:00",
+      "features": {
+        "distance_km": 2.05,
+        "major_pct": 4.0,
+        "walk_pct": 78.0,
+        "residential_pct": 35.0,
+        "service_pct": 1.0,
+        "intersections": 36,
+        "turns": 6,
+        "park_near_pct": 30.0,
+        "safety_score": 2.0,
+        "lit_pct": 18.0,
+        "signal_cnt": 6,
+        "crossing_cnt": 5,
+        "tunnel_m": 0.0
+      }
+    },
+    {
+      "timestamp": "2026-04-12T14:10:00",
+      "features": {
+        "distance_km": 2.40,
+        "major_pct": 5.0,
+        "walk_pct": 74.0,
+        "residential_pct": 30.0,
+        "service_pct": 2.0,
+        "intersections": 39,
+        "turns": 7,
+        "park_near_pct": 35.0,
+        "safety_score": 1.7,
+        "lit_pct": 6.0,
+        "signal_cnt": 5,
+        "crossing_cnt": 5,
+        "tunnel_m": 0.0
+      }
+    }
+  ]
+}

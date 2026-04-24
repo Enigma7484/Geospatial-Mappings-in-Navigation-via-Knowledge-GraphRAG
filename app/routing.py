@@ -23,6 +23,164 @@ def route_edge_data_min_len(GX, route):
             edges.append(ed)
     return edges
 
+def annotate_edge_generation_costs(G, G_proj, parks_union):
+    """
+    Add generation-side edge weights so route generation itself can prefer:
+    - scenic routes
+    - safer-feeling routes
+    - simpler routes
+    """
+    major_set = {
+        "primary", "secondary", "tertiary", "trunk",
+        "primary_link", "secondary_link", "tertiary_link", "trunk_link"
+    }
+    walk_set = {"footway", "path", "pedestrian", "steps", "living_street", "cycleway", "track"}
+    residential_set = {"residential", "unclassified"}
+    service_set = {"service"}
+
+    for u, v, key, data in G.edges(keys=True, data=True):
+        length = float(data.get("length", 1.0) or 1.0)
+        hwy = normalize_highway_tag(data.get("highway"))
+
+        # Get projected twin edge for park distance calculations
+        proj_data = G_proj.get_edge_data(u, v, key)
+        geom_proj = None
+        if proj_data:
+            geom_proj = proj_data.get("geometry", None)
+
+        near_park = False
+        park_dist = None
+        if parks_union is not None and geom_proj is not None:
+            try:
+                park_dist = geom_proj.distance(parks_union)
+                near_park = park_dist <= 75  # meters
+            except Exception:
+                park_dist = None
+
+        # ----------------------------
+        # Scenic generation weight
+        # lower cost = more likely to be generated
+        # ----------------------------
+        scenic_cost = length
+
+        if near_park:
+            scenic_cost *= 0.78
+        if hwy in walk_set:
+            scenic_cost *= 0.92
+        if hwy in residential_set:
+            scenic_cost *= 0.95
+        if hwy in major_set:
+            scenic_cost *= 1.35
+        if hwy in service_set:
+            scenic_cost *= 1.08
+
+        # ----------------------------
+        # Safe / calm generation weight
+        # ----------------------------
+        safe_cost = length
+
+        lit = data.get("lit", None)
+        if isinstance(lit, list):
+            lit = lit[0]
+        if isinstance(lit, str) and lit.lower() == "yes":
+            safe_cost *= 0.92
+
+        tunnel = data.get("tunnel", None)
+        if isinstance(tunnel, list):
+            tunnel = tunnel[0]
+        if tunnel in ["yes", "building_passage", "culvert"]:
+            safe_cost *= 1.25
+
+        if hwy in walk_set:
+            safe_cost *= 0.90
+        if hwy in residential_set:
+            safe_cost *= 0.94
+        if hwy in major_set:
+            safe_cost *= 1.40
+        if hwy in service_set:
+            safe_cost *= 1.12
+
+        # ----------------------------
+        # Simple generation weight
+        # Fewer complex intersections / easier streets
+        # ----------------------------
+        target_deg = G.degree[v] if v in G.nodes else 2
+        intersection_penalty = max(target_deg - 2, 0) * 12.0  # meters-equivalent
+
+        simple_cost = length + intersection_penalty
+        if hwy in major_set:
+            simple_cost += 18.0
+        if hwy in service_set:
+            simple_cost += 10.0
+        if hwy in residential_set:
+            simple_cost -= 4.0
+        if hwy in walk_set:
+            simple_cost -= 6.0
+
+        # Keep weights positive
+        data["scenic_weight"] = max(1.0, scenic_cost)
+        data["safe_weight"] = max(1.0, safe_cost)
+        data["simple_weight"] = max(1.0, simple_cost)
+
+def interleave_unique_route_lists(route_lists, max_routes):
+    """
+    Interleave route pools from different weighting strategies and remove duplicates.
+    """
+    out = []
+    seen = set()
+
+    max_len = max((len(lst) for lst in route_lists), default=0)
+
+    for i in range(max_len):
+        for lst in route_lists:
+            if i < len(lst):
+                route = lst[i]
+                key = tuple(route)
+                if key not in seen:
+                    seen.add(key)
+                    out.append(route)
+                    if len(out) >= max_routes:
+                        return out
+    return out
+
+
+def generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes):
+    """
+    Generate route candidates under multiple edge weights, not just pure shortest-path.
+    """
+    per_mode_k = max(k_routes, 4)
+
+    route_pools = []
+
+    weights = [
+        "length",
+        "scenic_weight",
+        "safe_weight",
+        "simple_weight",
+    ]
+
+    for weight_name in weights:
+        try:
+            routes = list(
+                ox.k_shortest_paths(
+                    G,
+                    orig_node,
+                    dest_node,
+                    k=per_mode_k,
+                    weight=weight_name,
+                )
+            )
+            route_pools.append(routes)
+        except Exception:
+            route_pools.append([])
+
+    routes = interleave_unique_route_lists(route_pools, max_routes=max(k_routes * 2, k_routes))
+
+    # final fallback
+    if not routes:
+            routes = generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes)
+
+    return routes[: max(k_routes, len(routes))]
 
 def count_turns(GX, route):
     turns = 0
@@ -48,7 +206,25 @@ def count_turns(GX, route):
     return turns
 
 
-def safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct):
+def safety_proxy_features(
+    G,
+    G_proj,
+    route,
+    total_len,
+    major_pct,
+    service_pct,
+    walk_pct,
+    residential_pct,
+):
+    """
+    OSM-only comfort/safety proxy (NOT real crime).
+    Returns a 0-100 score where higher = calmer / safer-feeling.
+    Uses:
+      - lit=yes length %
+      - traffic signals / crossings normalized per km
+      - tunnel %
+      - walk-friendly / residential / major-road exposure
+    """
     edges_proj = route_edge_data_min_len(G_proj, route)
 
     lit_m = 0.0
@@ -70,7 +246,10 @@ def safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct):
             tunnel_m += length
 
     lit_pct = 100.0 * lit_m / total_len if total_len > 0 else 0.0
+    tunnel_pct = 100.0 * tunnel_m / total_len if total_len > 0 else 0.0
+    distance_km = total_len / 1000.0 if total_len > 0 else 1.0
 
+    # Node-based proxies
     signal_cnt = 0
     crossing_cnt = 0
 
@@ -89,20 +268,34 @@ def safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct):
         if cr is not None:
             crossing_cnt += 1
 
+    signal_per_km = signal_cnt / max(distance_km, 0.1)
+    crossing_per_km = crossing_cnt / max(distance_km, 0.1)
+
+    # 0-100 interpretable proxy
+    # Higher = calmer / safer-feeling for walking
     safety_score = (
-        0.6 * lit_pct
+        50.0
+        + 0.25 * lit_pct
+        + 0.15 * walk_pct
+        + 0.10 * residential_pct
         - 0.25 * major_pct
-        - 0.15 * service_pct
-        - 0.03 * (signal_cnt + crossing_cnt)
-        - 0.002 * tunnel_m
+        - 0.12 * service_pct
+        - 2.00 * crossing_per_km
+        - 1.00 * signal_per_km
+        - 0.08 * tunnel_pct
     )
+
+    safety_score = max(0.0, min(100.0, safety_score))
 
     return {
         "lit_pct": lit_pct,
         "signal_cnt": signal_cnt,
         "crossing_cnt": crossing_cnt,
+        "signal_per_km": signal_per_km,
+        "crossing_per_km": crossing_per_km,
         "tunnel_m": tunnel_m,
-        "safety_score": safety_score
+        "tunnel_pct": tunnel_pct,
+        "safety_score": safety_score,
     }
 
 
@@ -148,6 +341,8 @@ def build_graph_and_parks(origin: str, dist_meters: int):
         parks_union = parks_proj.geometry.unary_union
     else:
         parks_union = None
+
+    annotate_edge_generation_costs(G, G_proj, parks_union)
 
     return G, G_proj, parks_union
 
@@ -218,7 +413,16 @@ def compute_route_features(G, G_proj, parks_union, route):
     park_near_pct = 100.0 * near_park_m / total_len if total_len > 0 else 0.0
     min_park_dist = None if min_park_dist == float("inf") else float(min_park_dist)
 
-    safety = safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct)
+    safety = safety_proxy_features(
+        G,
+        G_proj,
+        route,
+        total_len,
+        major_pct,
+        service_pct,
+        walk_pct,
+        residential_pct,
+    )
 
     top_types = ", ".join([t for t, _ in hwy_counts.most_common(5)])
 
@@ -232,7 +436,7 @@ def compute_route_features(G, G_proj, parks_union, route):
         f"Approx {intersections} intersections and {turns} turns. "
         f"{park_near_pct:.1f}% near parks, closest park "
         f"{min_park_dist if min_park_dist is not None else -1:.0f}m. "
-        f"Safety proxy {safety['safety_score']:.2f}."
+        f"Safety proxy {safety['safety_score']:.1f}/100."
     )
 
     return {

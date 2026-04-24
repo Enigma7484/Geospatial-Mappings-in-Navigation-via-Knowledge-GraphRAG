@@ -1,18 +1,31 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any, Literal
 
 
 class RankRoutesRequest(BaseModel):
     origin: str
     destination: str
-    preference: str
-    dist_meters: int = 6000
+
+    # Optional prompt baseline
+    preference: Optional[str] = None
+
+    # Optional history/profile-based personalization
+    user_id: Optional[str] = None
+    request_datetime: Optional[str] = None  # ISO string
+
+    dist_meters: int = 4000
     k_routes: int = 5
+
+    # Explicit ranking control
+    ranking_mode: Literal["prompt", "profile", "hybrid"] = "profile"
 
 
 class RouteResponse(BaseModel):
     rank: int
-    score: float
+    combined_score: float
+    profile_score: Optional[float] = None
+    sbert_score: Optional[float] = None
+
     distance_km: float
     major_pct: float
     walk_pct: float
@@ -27,6 +40,7 @@ class RouteResponse(BaseModel):
     signal_cnt: int
     crossing_cnt: int
     tunnel_m: float
+
     summary: str
     coordinates: List[List[float]]
 
@@ -34,5 +48,9 @@ class RouteResponse(BaseModel):
 class RankRoutesResponse(BaseModel):
     origin: str
     destination: str
-    preference: str
+    preference: Optional[str] = None
+    user_id: Optional[str] = None
+    ranking_mode: str
+    context: Dict[str, Any]
+    profile_summary: Optional[str] = None
     routes: List[RouteResponse]

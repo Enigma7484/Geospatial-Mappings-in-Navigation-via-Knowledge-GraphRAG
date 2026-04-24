@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 
@@ -10,25 +10,42 @@ app = FastAPI(title="GeoRoute Preference API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://YOUR-FRONTEND.vercel.app",
-    ],  # tighten later
+    allow_origins=["*"],  # tighten later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+def minmax(arr):
+    arr = np.asarray(arr, dtype=float)
+    mn = arr.min()
+    mx = arr.max()
+    if np.isclose(mx, mn):
+        return np.ones_like(arr) * 0.5
+    return (arr - mn) / (mx - mn)
+
+
 @app.get("/")
 def root():
     return {"message": "GeoRoute Preference API is running"}
 
+
 @app.post("/rank-routes", response_model=RankRoutesResponse)
 def rank_routes(payload: RankRoutesRequest):
-    # Lazy imports so startup stays light
     from .routing import generate_rankable_routes
+    from .profile import (
+        get_request_context,
+        load_user_history,
+        build_dynamic_profile,
+        summarize_profile,
+        score_routes_with_profile,
+    )
     from .ranking import rank_route_texts
 
+    context = get_request_context(payload.request_datetime)
+
+    # 1) Generate candidate routes + route summaries/features
     route_feature_dicts, route_texts = generate_rankable_routes(
         origin=payload.origin,
         destination=payload.destination,
@@ -36,8 +53,53 @@ def rank_routes(payload: RankRoutesRequest):
         k_routes=payload.k_routes,
     )
 
-    scores = rank_route_texts(route_texts, payload.preference)
-    ranking = np.argsort(-scores)
+    profile_summary = None
+    profile_scores = None
+    sbert_scores = None
+
+    # 2) Prompt-only baseline
+    if payload.ranking_mode in {"prompt", "hybrid"}:
+        if not payload.preference:
+            raise HTTPException(
+                status_code=400,
+                detail="ranking_mode='prompt' or 'hybrid' requires a non-empty 'preference'."
+            )
+        sbert_scores = minmax(rank_route_texts(route_texts, payload.preference))
+
+    # 3) Profile/history-based ranking
+    if payload.ranking_mode in {"profile", "hybrid"}:
+        if not payload.user_id:
+            raise HTTPException(
+                status_code=400,
+                detail="ranking_mode='profile' or 'hybrid' requires a non-empty 'user_id'."
+            )
+
+        history = load_user_history(payload.user_id)
+        if not history:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No historical profile found for user_id='{payload.user_id}'."
+            )
+
+        profile = build_dynamic_profile(history, context)
+        profile_summary = summarize_profile(profile)
+        profile_scores = score_routes_with_profile(route_feature_dicts, profile)
+
+    # 4) Combine depending on mode
+    if payload.ranking_mode == "prompt":
+        combined = sbert_scores
+
+    elif payload.ranking_mode == "profile":
+        combined = profile_scores
+
+    elif payload.ranking_mode == "hybrid":
+        # Profile is main research direction, prompt is secondary baseline
+        combined = 0.75 * profile_scores + 0.25 * sbert_scores
+
+    else:
+        raise HTTPException(status_code=400, detail="Invalid ranking_mode.")
+
+    ranking = np.argsort(-combined)
 
     routes = []
     for rank_num, idx in enumerate(ranking, start=1):
@@ -45,7 +107,9 @@ def rank_routes(payload: RankRoutesRequest):
         routes.append(
             RouteResponse(
                 rank=rank_num,
-                score=float(scores[idx]),
+                combined_score=float(combined[idx]),
+                profile_score=float(profile_scores[idx]) if profile_scores is not None else None,
+                sbert_score=float(sbert_scores[idx]) if sbert_scores is not None else None,
                 distance_km=feat["distance_km"],
                 major_pct=feat["major_pct"],
                 walk_pct=feat["walk_pct"],
@@ -69,5 +133,9 @@ def rank_routes(payload: RankRoutesRequest):
         origin=payload.origin,
         destination=payload.destination,
         preference=payload.preference,
+        user_id=payload.user_id,
+        ranking_mode=payload.ranking_mode,
+        context=context,
+        profile_summary=profile_summary,
         routes=routes,
     )
