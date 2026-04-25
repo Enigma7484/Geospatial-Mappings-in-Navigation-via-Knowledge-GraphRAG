@@ -10,7 +10,7 @@ app = FastAPI(title="GeoRoute Preference API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten later
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,7 +45,6 @@ def rank_routes(payload: RankRoutesRequest):
 
     context = get_request_context(payload.request_datetime)
 
-    # 1) Generate candidate routes + route summaries/features
     route_feature_dicts, route_texts = generate_rankable_routes(
         origin=payload.origin,
         destination=payload.destination,
@@ -53,49 +52,45 @@ def rank_routes(payload: RankRoutesRequest):
         k_routes=payload.k_routes,
     )
 
+    if not route_feature_dicts:
+        raise HTTPException(status_code=404, detail="No route candidates could be generated.")
+
     profile_summary = None
     profile_scores = None
     sbert_scores = None
 
-    # 2) Prompt-only baseline
     if payload.ranking_mode in {"prompt", "hybrid"}:
         if not payload.preference:
             raise HTTPException(
                 status_code=400,
-                detail="ranking_mode='prompt' or 'hybrid' requires a non-empty 'preference'."
+                detail="ranking_mode='prompt' or 'hybrid' requires a non-empty 'preference'.",
             )
         sbert_scores = minmax(rank_route_texts(route_texts, payload.preference))
 
-    # 3) Profile/history-based ranking
     if payload.ranking_mode in {"profile", "hybrid"}:
         if not payload.user_id:
             raise HTTPException(
                 status_code=400,
-                detail="ranking_mode='profile' or 'hybrid' requires a non-empty 'user_id'."
+                detail="ranking_mode='profile' or 'hybrid' requires a non-empty 'user_id'.",
             )
 
         history = load_user_history(payload.user_id)
         if not history:
             raise HTTPException(
                 status_code=404,
-                detail=f"No historical profile found for user_id='{payload.user_id}'."
+                detail=f"No historical profile found for user_id='{payload.user_id}'.",
             )
 
         profile = build_dynamic_profile(history, context)
         profile_summary = summarize_profile(profile)
         profile_scores = score_routes_with_profile(route_feature_dicts, profile)
 
-    # 4) Combine depending on mode
     if payload.ranking_mode == "prompt":
         combined = sbert_scores
-
     elif payload.ranking_mode == "profile":
         combined = profile_scores
-
     elif payload.ranking_mode == "hybrid":
-        # Profile is main research direction, prompt is secondary baseline
         combined = 0.75 * profile_scores + 0.25 * sbert_scores
-
     else:
         raise HTTPException(status_code=400, detail="Invalid ranking_mode.")
 

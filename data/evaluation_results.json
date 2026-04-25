@@ -1,0 +1,530 @@
+{
+  "summary": {
+    "num_tests": 10,
+    "top1_hits": 5,
+    "top1_accuracy": 0.5,
+    "mrr": 0.7
+  },
+  "results": [
+    {
+      "user_id": "geolife_000",
+      "trip_index": 3,
+      "timestamp": "2008-11-11T00:17:04",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-11T00:17:04",
+        "hour": 0,
+        "day_name": "Tuesday",
+        "day_type": "weekday",
+        "time_bucket": "night",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday night trips in fall, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 3 relevant historical trips (out of 3 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 23.7 turns, 35.3 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 11.769,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 45,
+        "turns": 30,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 138.83,
+        "avg_speed_kmh": 5.09
+      },
+      "oracle_candidate_index": 2,
+      "oracle_rank_position": 2,
+      "top1_candidate_index": 1,
+      "top1_is_oracle": false,
+      "profile_scores": [
+        0.0,
+        1.0,
+        0.5584403592614847
+      ],
+      "feature_distances_to_actual": [
+        2.5479135718244232,
+        2.8099428059488183,
+        2.438097640383067
+      ],
+      "candidate_summaries": [
+        "Walking route of 2.19 km. Top ways: footway, service, tertiary, primary. 64.8% on footpaths. 0.0% residential streets. 12.6% service roads. 22.6% major roads. Approx 36 intersections and 19 turns. 41.3% near parks, closest park 0m. Safety proxy 48.0/100.",
+        "Walking route of 2.21 km. Top ways: footway, service, residential, tertiary. 74.8% on footpaths. 0.2% residential streets. 12.1% service roads. 12.9% major roads. Approx 33 intersections and 15 turns. 60.9% near parks, closest park 0m. Safety proxy 50.3/100.",
+        "Walking route of 2.20 km. Top ways: footway, service, residential, tertiary. 74.7% on footpaths. 0.2% residential streets. 12.1% service roads. 12.9% major roads. Approx 39 intersections and 19 turns. 36.5% near parks, closest park 0m. Safety proxy 50.2/100."
+      ]
+    },
+    {
+      "user_id": "geolife_000",
+      "trip_index": 4,
+      "timestamp": "2008-11-17T15:52:23",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-17T15:52:23",
+        "hour": 15,
+        "day_name": "Monday",
+        "day_type": "weekday",
+        "time_bucket": "afternoon",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday afternoon trips in fall, this user appears to have avoids busy roads, prefers simpler navigation. Based on 4 relevant historical trips (out of 4 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 25.2 turns, 37.8 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 2.17,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 15,
+        "turns": 10,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 25.25,
+        "avg_speed_kmh": 5.16
+      },
+      "oracle_candidate_index": 0,
+      "oracle_rank_position": 3,
+      "top1_candidate_index": 2,
+      "top1_is_oracle": false,
+      "profile_scores": [
+        0.0,
+        0.9705906459945303,
+        1.0
+      ],
+      "feature_distances_to_actual": [
+        2.2678997457720635,
+        2.4095843145284146,
+        2.3045082290344148
+      ],
+      "candidate_summaries": [
+        "Walking route of 1.10 km. Top ways: footway, service, residential. 40.6% on footpaths. 19.4% residential streets. 40.0% service roads. 0.0% major roads. Approx 20 intersections and 11 turns. 25.2% near parks, closest park 19m. Safety proxy 47.8/100.",
+        "Walking route of 1.11 km. Top ways: footway, residential, service. 35.3% on footpaths. 44.4% residential streets. 20.3% service roads. 0.0% major roads. Approx 19 intersections and 7 turns. 55.6% near parks, closest park 12m. Safety proxy 53.7/100.",
+        "Walking route of 1.10 km. Top ways: footway, residential. 78.3% on footpaths. 21.7% residential streets. 0.0% service roads. 0.0% major roads. Approx 19 intersections and 4 turns. 25.2% near parks, closest park 19m. Safety proxy 58.5/100."
+      ]
+    },
+    {
+      "user_id": "geolife_000",
+      "trip_index": 5,
+      "timestamp": "2009-04-19T17:55:00",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2009-04-19T17:55:00",
+        "hour": 17,
+        "day_name": "Sunday",
+        "day_type": "weekend",
+        "time_bucket": "evening",
+        "season": "spring",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekend evening trips in spring, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 5 relevant historical trips (out of 5 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 22.2 turns, 33.2 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 2.511,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 13,
+        "turns": 9,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 26.58,
+        "avg_speed_kmh": 5.67
+      },
+      "oracle_candidate_index": 0,
+      "oracle_rank_position": 3,
+      "top1_candidate_index": 2,
+      "top1_is_oracle": false,
+      "profile_scores": [
+        0.0,
+        0.001840851231482012,
+        1.0
+      ],
+      "feature_distances_to_actual": [
+        2.2842053659062387,
+        2.6829658370479867,
+        2.3929192017808885
+      ],
+      "candidate_summaries": [
+        "Walking route of 1.55 km. Top ways: footway, residential, service. 39.9% on footpaths. 30.5% residential streets. 29.6% service roads. 0.0% major roads. Approx 26 intersections and 9 turns. 20.9% near parks, closest park 6m. Safety proxy 51.6/100.",
+        "Walking route of 1.57 km. Top ways: footway, residential, service. 63.4% on footpaths. 28.9% residential streets. 7.7% service roads. 0.0% major roads. Approx 33 intersections and 13 turns. 46.4% near parks, closest park 0m. Safety proxy 58.6/100.",
+        "Walking route of 1.57 km. Top ways: footway, residential. 71.1% on footpaths. 28.9% residential streets. 0.0% service roads. 0.0% major roads. Approx 27 intersections and 5 turns. 24.8% near parks, closest park 2m. Safety proxy 58.5/100."
+      ]
+    },
+    {
+      "user_id": "geolife_000",
+      "trip_index": 6,
+      "timestamp": "2009-04-23T09:28:38",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2009-04-23T09:28:38",
+        "hour": 9,
+        "day_name": "Thursday",
+        "day_type": "weekday",
+        "time_bucket": "morning",
+        "season": "spring",
+        "rush_hour": true
+      },
+      "profile_summary": "For weekday morning trips in spring during rush hour, this user appears to have avoids busy roads, prefers simpler navigation. Based on 6 relevant historical trips (out of 6 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 20.0 turns, 29.8 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 2.17,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 22,
+        "turns": 15,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 36.67,
+        "avg_speed_kmh": 3.55
+      },
+      "oracle_candidate_index": 0,
+      "oracle_rank_position": 1,
+      "top1_candidate_index": 0,
+      "top1_is_oracle": true,
+      "profile_scores": [
+        1.0,
+        0.36081383502076114,
+        0.0
+      ],
+      "feature_distances_to_actual": [
+        2.3170119855083913,
+        2.632985500087371,
+        2.515655389873339
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.06 km. Top ways: footway, service. 78.1% on footpaths. 0.0% residential streets. 21.9% service roads. 0.0% major roads. Approx 4 intersections and 0 turns. 56.7% near parks, closest park 6m. Safety proxy 39.1/100.",
+        "Walking route of 0.07 km. Top ways: service, footway, residential. 11.9% on footpaths. 17.6% residential streets. 70.5% service roads. 0.0% major roads. Approx 4 intersections and 2 turns. 51.7% near parks, closest park 6m. Safety proxy 25.1/100.",
+        "Walking route of 0.23 km. Top ways: footway, residential, service. 55.8% on footpaths. 38.3% residential streets. 5.9% service roads. 0.0% major roads. Approx 8 intersections and 4 turns. 75.1% near parks, closest park 6m. Safety proxy 42.0/100."
+      ]
+    },
+    {
+      "user_id": "geolife_000",
+      "trip_index": 7,
+      "timestamp": "2009-05-08T10:04:31",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2009-05-08T10:04:31",
+        "hour": 10,
+        "day_name": "Friday",
+        "day_type": "weekday",
+        "time_bucket": "morning",
+        "season": "spring",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday morning trips in spring, this user appears to have avoids busy roads, prefers simpler navigation. Based on 7 relevant historical trips (out of 7 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 19.3 turns, 28.7 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 3.031,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 15,
+        "turns": 10,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 48.62,
+        "avg_speed_kmh": 3.74
+      },
+      "oracle_candidate_index": 0,
+      "oracle_rank_position": 3,
+      "top1_candidate_index": 2,
+      "top1_is_oracle": false,
+      "profile_scores": [
+        0.0,
+        0.815790781712932,
+        1.0
+      ],
+      "feature_distances_to_actual": [
+        2.314430000421403,
+        2.6247637067818763,
+        2.393370359303362
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.24 km. Top ways: footway, service, residential. 47.2% on footpaths. 13.3% residential streets. 39.5% service roads. 0.0% major roads. Approx 10 intersections and 5 turns. 30.7% near parks, closest park 8m. Safety proxy 51.2/100.",
+        "Walking route of 0.25 km. Top ways: footway, service. 94.7% on footpaths. 0.0% residential streets. 5.3% service roads. 0.0% major roads. Approx 8 intersections and 2 turns. 46.9% near parks, closest park 6m. Safety proxy 47.7/100.",
+        "Walking route of 0.25 km. Top ways: footway, residential, service. 48.7% on footpaths. 46.0% residential streets. 5.3% service roads. 0.0% major roads. Approx 8 intersections and 3 turns. 46.9% near parks, closest park 6m. Safety proxy 53.3/100."
+      ]
+    },
+    {
+      "user_id": "geolife_002",
+      "trip_index": 3,
+      "timestamp": "2008-11-04T00:12:08",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-04T00:12:08",
+        "hour": 0,
+        "day_name": "Tuesday",
+        "day_type": "weekday",
+        "time_bucket": "night",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday night trips in fall, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 3 relevant historical trips (out of 3 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 25.7 turns, 38.3 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 9.297,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 45,
+        "turns": 30,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 246.95,
+        "avg_speed_kmh": 2.26
+      },
+      "oracle_candidate_index": 1,
+      "oracle_rank_position": 1,
+      "top1_candidate_index": 1,
+      "top1_is_oracle": true,
+      "profile_scores": [
+        0.0,
+        1.0,
+        0.8017355971271655
+      ],
+      "feature_distances_to_actual": [
+        3.1491525049198983,
+        2.8760277119546815,
+        3.009967250580249
+      ],
+      "candidate_summaries": [
+        "Walking route of 2.63 km. Top ways: secondary, primary, tertiary, footway, residential. 1.9% on footpaths. 28.7% residential streets. 0.0% service roads. 69.4% major roads. Approx 30 intersections and 15 turns. 8.5% near parks, closest park 7m. Safety proxy 29.7/100.",
+        "Walking route of 2.67 km. Top ways: primary, secondary, footway, residential, tertiary. 4.7% on footpaths. 34.1% residential streets. 0.0% service roads. 61.2% major roads. Approx 33 intersections and 17 turns. 10.5% near parks, closest park 7m. Safety proxy 33.2/100.",
+        "Walking route of 2.64 km. Top ways: secondary, primary, footway, residential, tertiary. 2.2% on footpaths. 34.5% residential streets. 0.0% service roads. 63.3% major roads. Approx 32 intersections and 15 turns. 9.1% near parks, closest park 7m. Safety proxy 32.3/100."
+      ]
+    },
+    {
+      "user_id": "geolife_002",
+      "trip_index": 4,
+      "timestamp": "2008-11-05T00:27:08",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-05T00:27:08",
+        "hour": 0,
+        "day_name": "Wednesday",
+        "day_type": "weekday",
+        "time_bucket": "night",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday night trips in fall, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 3 relevant historical trips (out of 4 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 25.7 turns, 38.3 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 5.97,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 18,
+        "turns": 12,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 233.97,
+        "avg_speed_kmh": 1.53
+      },
+      "oracle_candidate_index": 1,
+      "oracle_rank_position": 1,
+      "top1_candidate_index": 1,
+      "top1_is_oracle": true,
+      "profile_scores": [
+        0.27547409101730497,
+        1.0,
+        0.0
+      ],
+      "feature_distances_to_actual": [
+        2.5922026185053806,
+        2.5261925182342027,
+        2.9935979745782766
+      ],
+      "candidate_summaries": [
+        "Walking route of 2.65 km. Top ways: footway, tertiary, residential, secondary, trunk_link. 27.5% on footpaths. 22.6% residential streets. 0.0% service roads. 49.9% major roads. Approx 45 intersections and 13 turns. 9.1% near parks, closest park 7m. Safety proxy 39.0/100.",
+        "Walking route of 2.65 km. Top ways: footway, secondary, tertiary, residential, unclassified. 33.3% on footpaths. 23.5% residential streets. 0.0% service roads. 43.2% major roads. Approx 45 intersections and 19 turns. 14.2% near parks, closest park 7m. Safety proxy 40.9/100.",
+        "Walking route of 2.76 km. Top ways: secondary, footway, residential, tertiary, unclassified. 20.8% on footpaths. 27.1% residential streets. 0.0% service roads. 52.1% major roads. Approx 29 intersections and 10 turns. 18.2% near parks, closest park 0m. Safety proxy 35.9/100."
+      ]
+    },
+    {
+      "user_id": "geolife_002",
+      "trip_index": 5,
+      "timestamp": "2008-11-06T00:13:57",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-06T00:13:57",
+        "hour": 0,
+        "day_name": "Thursday",
+        "day_type": "weekday",
+        "time_bucket": "night",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday night trips in fall, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 4 relevant historical trips (out of 5 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 22.2 turns, 33.2 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 10.157,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 45,
+        "turns": 30,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 253.73,
+        "avg_speed_kmh": 2.4
+      },
+      "oracle_candidate_index": 1,
+      "oracle_rank_position": 1,
+      "top1_candidate_index": 1,
+      "top1_is_oracle": true,
+      "profile_scores": [
+        0.0,
+        1.0,
+        0.7791178963470402
+      ],
+      "feature_distances_to_actual": [
+        3.113623043498604,
+        2.96457147143303,
+        3.086424681437853
+      ],
+      "candidate_summaries": [
+        "Walking route of 2.62 km. Top ways: secondary, primary, tertiary, footway, residential. 1.9% on footpaths. 28.8% residential streets. 0.0% service roads. 69.4% major roads. Approx 30 intersections and 14 turns. 8.6% near parks, closest park 7m. Safety proxy 29.7/100.",
+        "Walking route of 2.66 km. Top ways: primary, secondary, footway, residential, tertiary. 4.7% on footpaths. 34.2% residential streets. 0.0% service roads. 61.2% major roads. Approx 33 intersections and 14 turns. 10.5% near parks, closest park 7m. Safety proxy 32.8/100.",
+        "Walking route of 2.63 km. Top ways: secondary, primary, footway, residential, tertiary. 2.2% on footpaths. 34.5% residential streets. 0.0% service roads. 63.3% major roads. Approx 32 intersections and 12 turns. 9.1% near parks, closest park 7m. Safety proxy 31.9/100."
+      ]
+    },
+    {
+      "user_id": "geolife_002",
+      "trip_index": 6,
+      "timestamp": "2008-11-06T23:58:07",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-06T23:58:07",
+        "hour": 23,
+        "day_name": "Thursday",
+        "day_type": "weekday",
+        "time_bucket": "night",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekday night trips in fall, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 5 relevant historical trips (out of 6 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 23.8 turns, 35.6 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 9.708,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 45,
+        "turns": 30,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 250.18,
+        "avg_speed_kmh": 2.33
+      },
+      "oracle_candidate_index": 1,
+      "oracle_rank_position": 1,
+      "top1_candidate_index": 1,
+      "top1_is_oracle": true,
+      "profile_scores": [
+        0.0,
+        1.0,
+        0.8206822946157493
+      ],
+      "feature_distances_to_actual": [
+        2.746757915471896,
+        2.671995044632818,
+        2.922584226521526
+      ],
+      "candidate_summaries": [
+        "Walking route of 2.74 km. Top ways: primary, footway, secondary, tertiary, residential. 6.7% on footpaths. 27.6% residential streets. 0.0% service roads. 65.7% major roads. Approx 35 intersections and 12 turns. 8.2% near parks, closest park 7m. Safety proxy 31.9/100.",
+        "Walking route of 2.74 km. Top ways: primary, footway, secondary, residential, secondary_link. 7.3% on footpaths. 33.1% residential streets. 0.0% service roads. 59.6% major roads. Approx 35 intersections and 12 turns. 8.8% near parks, closest park 7m. Safety proxy 33.7/100.",
+        "Walking route of 3.02 km. Top ways: secondary, footway, tertiary, trunk_link, steps. 27.2% on footpaths. 0.0% residential streets. 0.0% service roads. 72.8% major roads. Approx 31 intersections and 10 turns. 20.0% near parks, closest park 0m. Safety proxy 30.6/100."
+      ]
+    },
+    {
+      "user_id": "geolife_002",
+      "trip_index": 7,
+      "timestamp": "2008-11-08T03:19:57",
+      "mode": "walk_inferred",
+      "context": {
+        "timestamp": "2008-11-08T03:19:57",
+        "hour": 3,
+        "day_name": "Saturday",
+        "day_type": "weekend",
+        "time_bucket": "night",
+        "season": "fall",
+        "rush_hour": false
+      },
+      "profile_summary": "For weekend night trips in fall, this user appears to have safety-sensitive, avoids busy roads, prefers simpler navigation. Based on 6 relevant historical trips (out of 7 total), they tend to choose routes with about 10.0% park proximity, 15.0% major-road exposure, 24.8 turns, 37.2 intersections, and a safety proxy of 50.0/100.",
+      "actual_features": {
+        "distance_km": 16.0,
+        "major_pct": 15.0,
+        "walk_pct": 60.0,
+        "residential_pct": 20.0,
+        "service_pct": 5.0,
+        "intersections": 45,
+        "turns": 30,
+        "park_near_pct": 10.0,
+        "safety_score": 50.0,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "duration_min": 391.13,
+        "avg_speed_kmh": 2.45
+      },
+      "oracle_candidate_index": 1,
+      "oracle_rank_position": 2,
+      "top1_candidate_index": 0,
+      "top1_is_oracle": false,
+      "profile_scores": [
+        1.0,
+        0.1692198944312811,
+        0.0
+      ],
+      "feature_distances_to_actual": [
+        2.6827018200907786,
+        2.56614030800198,
+        2.7113163626309906
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.15 km. Top ways: residential. 0.0% on footpaths. 100.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 2 intersections and 0 turns. 0.0% near parks, closest park 307m. Safety proxy 60.0/100.",
+        "Walking route of 0.38 km. Top ways: secondary, primary, residential. 0.0% on footpaths. 31.6% residential streets. 0.0% service roads. 68.4% major roads. Approx 6 intersections and 2 turns. 0.0% near parks, closest park 320m. Safety proxy 36.1/100.",
+        "Walking route of 0.40 km. Top ways: secondary, primary, residential, footway. 2.7% on footpaths. 29.9% residential streets. 0.0% service roads. 67.4% major roads. Approx 8 intersections and 4 turns. 0.0% near parks, closest park 320m. Safety proxy 34.1/100."
+      ]
+    }
+  ]
+}

@@ -1,20 +1,29 @@
 import json
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 import numpy as np
 
+DEFAULT_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "user_histories.json"
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "user_histories.json"
+
+def get_data_path() -> Path:
+    env_path = os.getenv("GEOROUTE_USER_HISTORY_PATH")
+    if env_path:
+        p = Path(env_path)
+        return p if p.is_absolute() else Path(__file__).resolve().parent.parent / p
+    return DEFAULT_DATA_PATH
 
 
 def parse_dt(dt_str: Optional[str]) -> datetime:
-    if not dt_str:
+    if not dt_str or dt_str == "string":
         return datetime.utcnow()
-
-    # basic ISO handling
-    clean = dt_str.replace("Z", "+00:00")
-    return datetime.fromisoformat(clean)
+    try:
+        clean = dt_str.replace("Z", "+00:00")
+        return datetime.fromisoformat(clean)
+    except Exception:
+        return datetime.utcnow()
 
 
 def get_time_bucket(hour: int) -> str:
@@ -43,7 +52,6 @@ def get_request_context(request_datetime: Optional[str]) -> Dict[str, Any]:
     time_bucket = get_time_bucket(dt.hour)
     season = get_season(dt.month)
     rush_hour = day_type == "weekday" and (7 <= dt.hour <= 9 or 16 <= dt.hour <= 18)
-
     return {
         "timestamp": dt.isoformat(),
         "hour": dt.hour,
@@ -56,12 +64,11 @@ def get_request_context(request_datetime: Optional[str]) -> Dict[str, Any]:
 
 
 def load_user_history(user_id: str) -> List[Dict[str, Any]]:
-    if not DATA_PATH.exists():
+    data_path = get_data_path()
+    if not data_path.exists():
         return []
-
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
+    with open(data_path, "r", encoding="utf-8") as f:
         data = json.load(f)
-
     return data.get(user_id, [])
 
 
@@ -99,44 +106,30 @@ def context_match_score(entry_ctx: Dict[str, Any], current_ctx: Dict[str, Any]) 
 def select_contextual_history(records: List[Dict[str, Any]], current_ctx: Dict[str, Any]) -> List[Dict[str, Any]]:
     if not records:
         return []
-
     enriched = enrich_history_context(records)
-
-    scored = []
-    for rec in enriched:
-        s = context_match_score(rec["context"], current_ctx)
-        scored.append((s, rec))
-
+    scored = [(context_match_score(rec["context"], current_ctx), rec) for rec in enriched]
     scored.sort(key=lambda x: x[0], reverse=True)
-
     best_score = scored[0][0]
     if best_score <= 0:
         return enriched
-
     selected = [rec for s, rec in scored if s >= max(best_score - 1, 1)]
-
-    # if too few contextual records, fall back to all
-    if len(selected) < 3:
-        return enriched
-
-    return selected
+    return enriched if len(selected) < 3 else selected
 
 
 def safe_mean(records: List[Dict[str, Any]], feature: str, default: float = 0.0) -> float:
     vals = []
     for rec in records:
-        feats = rec.get("features", {})
-        val = feats.get(feature)
+        val = rec.get("features", {}).get(feature)
         if val is not None:
-            vals.append(float(val))
-    if not vals:
-        return default
-    return float(np.mean(vals))
+            try:
+                vals.append(float(val))
+            except Exception:
+                pass
+    return float(np.mean(vals)) if vals else default
 
 
 def build_dynamic_profile(records: List[Dict[str, Any]], current_ctx: Dict[str, Any]) -> Dict[str, Any]:
     selected = select_contextual_history(records, current_ctx)
-
     avg = {
         "distance_km": safe_mean(selected, "distance_km", 2.0),
         "major_pct": safe_mean(selected, "major_pct", 20.0),
@@ -146,20 +139,18 @@ def build_dynamic_profile(records: List[Dict[str, Any]], current_ctx: Dict[str, 
         "intersections": safe_mean(selected, "intersections", 50.0),
         "turns": safe_mean(selected, "turns", 10.0),
         "park_near_pct": safe_mean(selected, "park_near_pct", 10.0),
-        "safety_score": safe_mean(selected, "safety_score", 0.0),
+        "safety_score": safe_mean(selected, "safety_score", 50.0),
         "lit_pct": safe_mean(selected, "lit_pct", 0.0),
         "signal_cnt": safe_mean(selected, "signal_cnt", 10.0),
         "crossing_cnt": safe_mean(selected, "crossing_cnt", 10.0),
         "tunnel_m": safe_mean(selected, "tunnel_m", 0.0),
     }
-
-    # heuristic importance weights from history
     weights = {
         "park_near_pct": 0.5 + avg["park_near_pct"] / 100.0,
-        "safety_score": 0.6 + max(min((avg["safety_score"] + 5.0) / 15.0, 1.0), 0.0),
+        "safety_score": 0.4 + avg["safety_score"] / 100.0,
         "walk_pct": 0.4 + avg["walk_pct"] / 100.0,
         "residential_pct": 0.3 + avg["residential_pct"] / 100.0,
-        "major_pct": 0.6 + (1.0 - avg["major_pct"] / 100.0),
+        "major_pct": 0.6 + (1.0 - min(avg["major_pct"] / 100.0, 1.0)),
         "service_pct": 0.3 + (1.0 - min(avg["service_pct"] / 20.0, 1.0)),
         "turns": 0.5 + (1.0 - min(avg["turns"] / 25.0, 1.0)),
         "intersections": 0.5 + (1.0 - min(avg["intersections"] / 120.0, 1.0)),
@@ -169,31 +160,24 @@ def build_dynamic_profile(records: List[Dict[str, Any]], current_ctx: Dict[str, 
         "crossing_cnt": 0.2 + (1.0 - min(avg["crossing_cnt"] / 40.0, 1.0)),
         "tunnel_m": 0.3 + (1.0 - min(avg["tunnel_m"] / 300.0, 1.0)),
     }
-
-    # contextual adjustments from prof's notes: time/day/season/rush hour
     if current_ctx["rush_hour"]:
         weights["major_pct"] += 0.4
         weights["intersections"] += 0.25
         weights["signal_cnt"] += 0.25
         weights["crossing_cnt"] += 0.25
-
     if current_ctx["time_bucket"] in {"evening", "night"}:
         weights["safety_score"] += 0.4
         weights["lit_pct"] += 0.4
         weights["tunnel_m"] += 0.3
-
     if current_ctx["day_type"] == "weekend":
         weights["park_near_pct"] += 0.3
         weights["residential_pct"] += 0.2
-
     if current_ctx["season"] == "summer":
         weights["park_near_pct"] += 0.2
-
     if current_ctx["season"] == "winter":
         weights["distance_km"] += 0.2
         weights["turns"] += 0.2
         weights["intersections"] += 0.2
-
     traits = []
     if weights["park_near_pct"] >= 1.0:
         traits.append("scenic/green preference")
@@ -205,7 +189,6 @@ def build_dynamic_profile(records: List[Dict[str, Any]], current_ctx: Dict[str, 
         traits.append("prefers simpler navigation")
     if weights["distance_km"] >= 1.0:
         traits.append("prefers efficient/direct routes")
-
     return {
         "context": current_ctx,
         "num_history_records": len(records),
@@ -220,15 +203,9 @@ def summarize_profile(profile: Dict[str, Any]) -> str:
     ctx = profile["context"]
     avg = profile["avg_features"]
     traits = profile["traits"]
-
-    ctx_line = (
-        f"For {ctx['day_type']} {ctx['time_bucket']} trips in {ctx['season']}"
-        + (" during rush hour" if ctx["rush_hour"] else "")
-    )
-
+    ctx_line = f"For {ctx['day_type']} {ctx['time_bucket']} trips in {ctx['season']}" + (" during rush hour" if ctx["rush_hour"] else "")
     trait_text = ", ".join(traits) if traits else "balanced route preferences"
-
-    summary = (
+    return (
         f"{ctx_line}, this user appears to have {trait_text}. "
         f"Based on {profile['num_context_records']} relevant historical trips "
         f"(out of {profile['num_history_records']} total), they tend to choose routes "
@@ -236,9 +213,8 @@ def summarize_profile(profile: Dict[str, Any]) -> str:
         f"{avg['major_pct']:.1f}% major-road exposure, "
         f"{avg['turns']:.1f} turns, "
         f"{avg['intersections']:.1f} intersections, and "
-        f"a safety proxy of {avg['safety_score']:.2f}."
+        f"a safety proxy of {avg['safety_score']:.1f}/100."
     )
-    return summary
 
 
 def _minmax(arr: np.ndarray) -> np.ndarray:
@@ -252,7 +228,6 @@ def _minmax(arr: np.ndarray) -> np.ndarray:
 
 def score_routes_with_profile(route_feature_dicts: List[Dict[str, Any]], profile: Dict[str, Any]) -> np.ndarray:
     weights = profile["weights"]
-
     distance = _minmax(np.array([r["distance_km"] for r in route_feature_dicts]))
     major = _minmax(np.array([r["major_pct"] for r in route_feature_dicts]))
     walk = _minmax(np.array([r["walk_pct"] for r in route_feature_dicts]))
@@ -266,7 +241,6 @@ def score_routes_with_profile(route_feature_dicts: List[Dict[str, Any]], profile
     signals = _minmax(np.array([r["signal_cnt"] for r in route_feature_dicts]))
     crossings = _minmax(np.array([r["crossing_cnt"] for r in route_feature_dicts]))
     tunnel = _minmax(np.array([r["tunnel_m"] for r in route_feature_dicts]))
-
     raw = (
         weights["park_near_pct"] * park
         + weights["safety_score"] * safety
@@ -282,5 +256,4 @@ def score_routes_with_profile(route_feature_dicts: List[Dict[str, Any]], profile
         - weights["crossing_cnt"] * crossings
         - weights["tunnel_m"] * tunnel
     )
-
     return _minmax(raw)

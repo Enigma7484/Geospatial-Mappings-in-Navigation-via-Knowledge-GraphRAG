@@ -5,18 +5,11 @@ from typing import List, Optional, Dict, Any, Literal
 class RankRoutesRequest(BaseModel):
     origin: str
     destination: str
-
-    # Optional prompt baseline
     preference: Optional[str] = None
-
-    # Optional history/profile-based personalization
     user_id: Optional[str] = None
-    request_datetime: Optional[str] = None  # ISO string
-
+    request_datetime: Optional[str] = None
     dist_meters: int = 4000
     k_routes: int = 5
-
-    # Explicit ranking control
     ranking_mode: Literal["prompt", "profile", "hybrid"] = "profile"
 
 
@@ -25,7 +18,6 @@ class RouteResponse(BaseModel):
     combined_score: float
     profile_score: Optional[float] = None
     sbert_score: Optional[float] = None
-
     distance_km: float
     major_pct: float
     walk_pct: float
@@ -40,7 +32,6 @@ class RouteResponse(BaseModel):
     signal_cnt: int
     crossing_cnt: int
     tunnel_m: float
-
     summary: str
     coordinates: List[List[float]]
 
