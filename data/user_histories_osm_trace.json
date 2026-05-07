@@ -1,0 +1,214 @@
+{
+  "osm_trace_toronto": [
+    {
+      "timestamp": "2019-05-04T11:44:25+00:00",
+      "mode": "osm_pseudo_trace",
+      "source": "osm_public_gps_trackpoints",
+      "origin": {
+        "lat": 43.6454715,
+        "lon": -79.3823
+      },
+      "destination": {
+        "lat": 43.6466453,
+        "lon": -79.40494
+      },
+      "features": {
+        "distance_km": 10.951998080191485,
+        "major_pct": 0.0,
+        "walk_pct": 89.59011315439996,
+        "residential_pct": 0.0,
+        "service_pct": 10.40988684560003,
+        "intersections": 451,
+        "turns": 337,
+        "park_near_pct": 21.613588581893975,
+        "safety_score": 57.10045316833566,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 25,
+        "tunnel_m": 716.6719166005676,
+        "raw_trace_distance_km": 5.697,
+        "duration_min": 96.55,
+        "avg_speed_kmh": 3.54,
+        "pseudo_segment_points": 518,
+        "route_distance_ratio": 1.922466305489751,
+        "gps_to_route_mean_m": 10.3626833774238,
+        "gps_to_route_median_m": 6.317192794955253
+      }
+    },
+    {
+      "timestamp": "2019-05-04T18:09:10+00:00",
+      "mode": "osm_pseudo_trace",
+      "source": "osm_public_gps_trackpoints",
+      "origin": {
+        "lat": 43.6546472,
+        "lon": -79.4048457
+      },
+      "destination": {
+        "lat": 43.6450001,
+        "lon": -79.3825871
+      },
+      "features": {
+        "distance_km": 9.17471935424518,
+        "major_pct": 0.0,
+        "walk_pct": 87.28498299950208,
+        "residential_pct": 0.20695668359821082,
+        "service_pct": 12.508060316899819,
+        "intersections": 368,
+        "turns": 321,
+        "park_near_pct": 28.13870936116094,
+        "safety_score": 55.37226194430223,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 28,
+        "tunnel_m": 156.5264466045175,
+        "raw_trace_distance_km": 4.561,
+        "duration_min": 71.67,
+        "avg_speed_kmh": 3.82,
+        "pseudo_segment_points": 404,
+        "route_distance_ratio": 2.011686084665895,
+        "gps_to_route_mean_m": 6.664386618409514,
+        "gps_to_route_median_m": 3.48906276382185
+      }
+    },
+    {
+      "timestamp": "2023-10-16T11:29:21+00:00",
+      "mode": "osm_pseudo_trace",
+      "source": "osm_public_gps_trackpoints",
+      "origin": {
+        "lat": 43.6592399,
+        "lon": -79.4024725
+      },
+      "destination": {
+        "lat": 43.6699964,
+        "lon": -79.3896551
+      },
+      "features": {
+        "distance_km": 6.955182874818774,
+        "major_pct": 1.3458024351916567,
+        "walk_pct": 89.04420697911347,
+        "residential_pct": 0.45522520908536085,
+        "service_pct": 9.154765376609536,
+        "intersections": 221,
+        "turns": 167,
+        "park_near_pct": 28.3780165462905,
+        "safety_score": 55.065802872109664,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 24,
+        "tunnel_m": 0.0,
+        "raw_trace_distance_km": 3.04,
+        "duration_min": 14.55,
+        "avg_speed_kmh": 12.54,
+        "pseudo_segment_points": 5699,
+        "route_distance_ratio": 2.287833411308812,
+        "gps_to_route_mean_m": 9.598199344728307,
+        "gps_to_route_median_m": 8.12310740007732
+      }
+    },
+    {
+      "timestamp": "2023-10-16T13:25:18+00:00",
+      "mode": "osm_pseudo_trace",
+      "source": "osm_public_gps_trackpoints",
+      "origin": {
+        "lat": 43.6450688,
+        "lon": -79.3823574
+      },
+      "destination": {
+        "lat": 43.6568001,
+        "lon": -79.3852542
+      },
+      "features": {
+        "distance_km": 4.478919948575897,
+        "major_pct": 0.0,
+        "walk_pct": 95.46930206064229,
+        "residential_pct": 0.5684963244483286,
+        "service_pct": 3.962201614909384,
+        "intersections": 186,
+        "turns": 105,
+        "park_near_pct": 66.40424246605482,
+        "safety_score": 63.16984005266284,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 1,
+        "tunnel_m": 159.7879725511943,
+        "raw_trace_distance_km": 1.888,
+        "duration_min": 12.2,
+        "avg_speed_kmh": 9.29,
+        "pseudo_segment_points": 5802,
+        "route_distance_ratio": 2.3722984944132905,
+        "gps_to_route_mean_m": 8.790826689219253,
+        "gps_to_route_median_m": 8.031574806582611
+      }
+    },
+    {
+      "timestamp": "2023-10-16T23:47:31+00:00",
+      "mode": "osm_pseudo_trace",
+      "source": "osm_public_gps_trackpoints",
+      "origin": {
+        "lat": 43.6529376,
+        "lon": -79.387819
+      },
+      "destination": {
+        "lat": 43.6450038,
+        "lon": -79.3825384
+      },
+      "features": {
+        "distance_km": 2.469029749817987,
+        "major_pct": 0.0,
+        "walk_pct": 100.0,
+        "residential_pct": 0.0,
+        "service_pct": 0.0,
+        "intersections": 109,
+        "turns": 54,
+        "park_near_pct": 59.910671544977276,
+        "safety_score": 63.25156874805446,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 2,
+        "tunnel_m": 39.61609707063051,
+        "raw_trace_distance_km": 1.054,
+        "duration_min": 6.18,
+        "avg_speed_kmh": 10.22,
+        "pseudo_segment_points": 2545,
+        "route_distance_ratio": 2.343242816677165,
+        "gps_to_route_mean_m": 8.559364044553918,
+        "gps_to_route_median_m": 9.210935074123109
+      }
+    },
+    {
+      "timestamp": "2026-02-14T14:07:23+00:00",
+      "mode": "osm_pseudo_trace",
+      "source": "osm_public_gps_trackpoints",
+      "origin": {
+        "lat": 43.6453411,
+        "lon": -79.4034294
+      },
+      "destination": {
+        "lat": 43.6484807,
+        "lon": -79.4045162
+      },
+      "features": {
+        "distance_km": 1.1772048058957727,
+        "major_pct": 0.0,
+        "walk_pct": 97.39174899016234,
+        "residential_pct": 0.0,
+        "service_pct": 2.608251009837651,
+        "intersections": 45,
+        "turns": 27,
+        "park_near_pct": 31.82418868836031,
+        "safety_score": 64.29577222734383,
+        "lit_pct": 0.0,
+        "signal_cnt": 0,
+        "crossing_cnt": 0,
+        "tunnel_m": 0.0,
+        "raw_trace_distance_km": 1.138,
+        "duration_min": 35.77,
+        "avg_speed_kmh": 1.91,
+        "pseudo_segment_points": 29,
+        "route_distance_ratio": 1.034606993632891,
+        "gps_to_route_mean_m": 8.717200317117786,
+        "gps_to_route_median_m": 2.453926610858876
+      }
+    }
+  ]
+}

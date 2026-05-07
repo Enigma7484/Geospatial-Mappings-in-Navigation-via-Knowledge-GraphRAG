@@ -1,0 +1,177 @@
+{
+  "files_analyzed": 3,
+  "file_summaries": [
+    {
+      "file": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\osm_trackpoints_page_0.gpx",
+      "num_points": 5000,
+      "num_tracks_or_segments": 8,
+      "point_summary": {
+        "num_points": 5000,
+        "has_timestamps": true,
+        "timestamp_coverage_pct": 100.0,
+        "bbox": {
+          "south": 43.6450001,
+          "north": 43.6685867,
+          "west": -79.40494,
+          "east": -79.3805376
+        },
+        "time_min": "2019-05-04T11:44:25+00:00",
+        "time_max": "2026-02-14T15:06:27+00:00"
+      }
+    },
+    {
+      "file": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\osm_trackpoints_page_1.gpx",
+      "num_points": 5000,
+      "num_tracks_or_segments": 9,
+      "point_summary": {
+        "num_points": 5000,
+        "has_timestamps": true,
+        "timestamp_coverage_pct": 100.0,
+        "bbox": {
+          "south": 43.6450688,
+          "north": 43.6699964,
+          "west": -79.4035897,
+          "east": -79.3823574
+        },
+        "time_min": "2023-10-16T11:35:28+00:00",
+        "time_max": "2023-10-16T13:37:30+00:00"
+      }
+    },
+    {
+      "file": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\osm_trackpoints_page_2.gpx",
+      "num_points": 5000,
+      "num_tracks_or_segments": 3,
+      "point_summary": {
+        "num_points": 5000,
+        "has_timestamps": true,
+        "timestamp_coverage_pct": 100.0,
+        "bbox": {
+          "south": 43.657481,
+          "north": 43.6686747,
+          "west": -79.4049928,
+          "east": -79.3945226
+        },
+        "time_min": "2023-10-16T11:29:21+00:00",
+        "time_max": "2023-10-16T11:42:04+00:00"
+      }
+    }
+  ],
+  "overall": {
+    "num_points": 15000,
+    "has_timestamps": true,
+    "timestamp_coverage_pct": 100.0,
+    "bbox": {
+      "south": 43.6450001,
+      "north": 43.6699964,
+      "west": -79.4049928,
+      "east": -79.3805376
+    },
+    "time_min": "2019-05-04T11:44:25+00:00",
+    "time_max": "2026-02-14T15:06:27+00:00"
+  },
+  "pseudo_segments_found": 6,
+  "useful_segments_found": 6,
+  "useful_segments_preview": [
+    {
+      "num_points": 518,
+      "start_time": "2019-05-04T11:44:25+00:00",
+      "end_time": "2019-05-04T13:20:58+00:00",
+      "duration_min": 96.55,
+      "distance_km": 5.697,
+      "avg_speed_kmh": 3.54,
+      "origin": {
+        "lat": 43.6454715,
+        "lon": -79.3823
+      },
+      "destination": {
+        "lat": 43.6466453,
+        "lon": -79.40494
+      }
+    },
+    {
+      "num_points": 404,
+      "start_time": "2019-05-04T18:09:10+00:00",
+      "end_time": "2019-05-04T19:20:50+00:00",
+      "duration_min": 71.67,
+      "distance_km": 4.561,
+      "avg_speed_kmh": 3.82,
+      "origin": {
+        "lat": 43.6546472,
+        "lon": -79.4048457
+      },
+      "destination": {
+        "lat": 43.6450001,
+        "lon": -79.3825871
+      }
+    },
+    {
+      "num_points": 5699,
+      "start_time": "2023-10-16T11:29:21+00:00",
+      "end_time": "2023-10-16T11:43:54+00:00",
+      "duration_min": 14.55,
+      "distance_km": 3.04,
+      "avg_speed_kmh": 12.54,
+      "origin": {
+        "lat": 43.6592399,
+        "lon": -79.4024725
+      },
+      "destination": {
+        "lat": 43.6699964,
+        "lon": -79.3896551
+      }
+    },
+    {
+      "num_points": 5802,
+      "start_time": "2023-10-16T13:25:18+00:00",
+      "end_time": "2023-10-16T13:37:30+00:00",
+      "duration_min": 12.2,
+      "distance_km": 1.888,
+      "avg_speed_kmh": 9.29,
+      "origin": {
+        "lat": 43.6450688,
+        "lon": -79.3823574
+      },
+      "destination": {
+        "lat": 43.6568001,
+        "lon": -79.3852542
+      }
+    },
+    {
+      "num_points": 2545,
+      "start_time": "2023-10-16T23:47:31+00:00",
+      "end_time": "2023-10-16T23:53:42+00:00",
+      "duration_min": 6.18,
+      "distance_km": 1.054,
+      "avg_speed_kmh": 10.22,
+      "origin": {
+        "lat": 43.6529376,
+        "lon": -79.387819
+      },
+      "destination": {
+        "lat": 43.6450038,
+        "lon": -79.3825384
+      }
+    },
+    {
+      "num_points": 29,
+      "start_time": "2026-02-14T14:07:23+00:00",
+      "end_time": "2026-02-14T14:43:09+00:00",
+      "duration_min": 35.77,
+      "distance_km": 1.138,
+      "avg_speed_kmh": 1.91,
+      "origin": {
+        "lat": 43.6453411,
+        "lon": -79.4034294
+      },
+      "destination": {
+        "lat": 43.6484807,
+        "lon": -79.4045162
+      }
+    }
+  ],
+  "interpretation": {
+    "if_num_tracks_or_segments_is_zero": "The OSM endpoint is likely returning area-level trackpoints without clean trace grouping.",
+    "if_useful_segments_found_is_high": "There may be enough temporal continuity to build area-level movement-history signals.",
+    "caution": "Pseudo-segments are not guaranteed to correspond to one user or one real trip."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "data_quality": {
+    "total_points": 15000,
+    "timestamped_points": 15000,
+    "timestamp_coverage": 1.0,
+    "pseudo_segments_found": 6,
+    "useful_segments_found": 6,
+    "useful_segment_rate": 1.0,
+    "avg_segment_distance_km": 2.8961917374385355,
+    "median_segment_distance_km": 2.4640412987986577,
+    "min_segment_distance_km": 1.0536807078829304,
+    "max_segment_distance_km": 5.696847871360454,
+    "avg_segment_duration_min": 39.486111111111114,
+    "median_segment_duration_min": 25.15833333333333,
+    "avg_segment_speed_kmh": 6.88555658225238,
+    "median_segment_speed_kmh": 6.551779028448026,
+    "max_observed_jump_m": 203.21991814657875
+  },
+  "map_matching_quality": {
+    "segments_attempted": 6,
+    "map_match_successes": 6,
+    "map_match_success_rate": 1.0,
+    "avg_route_distance_ratio": 1.9953556843646343,
+    "median_route_distance_ratio": 2.1497597479873534,
+    "avg_gps_to_route_mean_m": 8.782110065242096,
+    "median_gps_to_route_median_m": 7.174383800768933,
+    "avg_pair_success_rate": 1.0
+  },
+  "prototype_thresholds": {
+    "timestamp_coverage_min": 0.8,
+    "useful_segments_min": 5,
+    "map_match_success_rate_min": 0.7,
+    "route_distance_ratio_target_range": [
+      0.5,
+      2.0
+    ],
+    "gps_to_route_median_target_m": 100
+  },
+  "checks": {
+    "timestamp_coverage_ok": true,
+    "useful_segments_ok": true,
+    "map_match_success_rate_ok": true,
+    "route_distance_ratio_ok": true,
+    "gps_to_route_distance_ok": true
+  },
+  "overall_prototype_usable": true
+}

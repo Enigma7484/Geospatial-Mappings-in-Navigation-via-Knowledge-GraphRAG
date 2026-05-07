@@ -1,0 +1,100 @@
+{
+  "num_tests": 3,
+  "hit_at_1": 0.6666666666666666,
+  "hit_at_3": 1.0,
+  "mrr": 0.7777777777777778,
+  "ndcg_at_3": 0.9443099607496434,
+  "results": [
+    {
+      "test_index": 3,
+      "timestamp": "2023-10-16T13:25:18+00:00",
+      "oracle_rank": 1,
+      "hit_at_1": true,
+      "hit_at_3": true,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_3": 0.9695587080580929,
+      "profile_scores": [
+        1.0,
+        0.0017605794256940145,
+        0.0,
+        0.0029921673758607566
+      ],
+      "ranked_indices": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "relevances_ranked": [
+        1.0,
+        0.2308439114603179,
+        0.0,
+        0.07193984841205747
+      ]
+    },
+    {
+      "test_index": 4,
+      "timestamp": "2023-10-16T23:47:31+00:00",
+      "oracle_rank": 1,
+      "hit_at_1": true,
+      "hit_at_3": true,
+      "reciprocal_rank": 1.0,
+      "ndcg_at_3": 0.9740814546997958,
+      "profile_scores": [
+        1.0,
+        0.0,
+        0.050274101913779526,
+        0.015899375154749193,
+        0.8837764936465623
+      ],
+      "ranked_indices": [
+        0,
+        4,
+        2,
+        3,
+        1
+      ],
+      "relevances_ranked": [
+        1.0,
+        0.5586850633497903,
+        0.04730448016096578,
+        0.12053784580208637,
+        0.0
+      ]
+    },
+    {
+      "test_index": 5,
+      "timestamp": "2026-02-14T14:07:23+00:00",
+      "oracle_rank": 3,
+      "hit_at_1": false,
+      "hit_at_3": true,
+      "reciprocal_rank": 0.3333333333333333,
+      "ndcg_at_3": 0.8892897194910414,
+      "profile_scores": [
+        0.8848589524348517,
+        0.0,
+        0.06884751972919056,
+        0.07382777150517421,
+        0.9149792003357444,
+        1.0
+      ],
+      "ranked_indices": [
+        5,
+        4,
+        0,
+        3,
+        2,
+        1
+      ],
+      "relevances_ranked": [
+        0.7027960160531181,
+        0.43384103310931366,
+        1.0,
+        0.11913998708806106,
+        0.05287887326322971,
+        0.0
+      ]
+    }
+  ],
+  "note": "This is a preliminary profile-ranking sanity check using OSM pseudo-history records. It does not replace full route-choice evaluation against independently observed trips."
+}
