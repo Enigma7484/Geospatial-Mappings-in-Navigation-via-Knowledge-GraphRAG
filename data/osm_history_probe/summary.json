@@ -5,7 +5,7 @@
     "east": -79.375,
     "north": 43.67
   },
-  "pages_requested": 3,
+  "pages_requested": 5,
   "pages": [
     {
       "page": 0,
@@ -21,9 +21,19 @@
       "page": 2,
       "raw_file": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\osm_trackpoints_page_2.gpx",
       "num_points": 5000
+    },
+    {
+      "page": 3,
+      "raw_file": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\osm_trackpoints_page_3.gpx",
+      "num_points": 5000
+    },
+    {
+      "page": 4,
+      "raw_file": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\osm_trackpoints_page_4.gpx",
+      "num_points": 5000
     }
   ],
-  "total_points_parsed": 15000,
+  "total_points_parsed": 25000,
   "preview_json": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\osm_history_probe\\trackpoints_preview.json",
   "note": "OSM public GPS trackpoints may not provide clean per-user route history; this probe checks area-level trace usefulness."
 }

@@ -1,0 +1,28 @@
+This section reports current prototype outputs only. They should not be treated as final experimental evidence.
+
+\subsection{Trace Reconstruction}
+The Toronto OSM trace probe currently contains $15{,}000$ parsed trackpoints with timestamp coverage $1.00$. The pipeline found $6$ pseudo-segments and $6$ useful segments, for a useful segment rate of $1.00$. Approximate map matching succeeded for all attempted useful segments. The median GPS-to-route median distance is approximately $7.17$ meters, indicating close geometric alignment between sampled points and reconstructed routes. However, the median route-distance ratio is approximately $2.15$, above the strict target ceiling of $2.0$.
+
+Therefore, the current strict prototype usability flag is false. The exploratory usability flag is true under the looser $2.5$ route-distance-ratio ceiling. This distinction is central: the data is useful for exploratory pseudo-history experiments, but the reconstruction is not yet clean enough for strong claims about route fidelity.
+
+\subsection{Route-Candidate Ranking}
+The corrected route-candidate baseline evaluation currently runs on $3$ held-out pseudo-history queries. Prompt/SBERT and hybrid baselines are skipped because the OSM pseudo-history records do not include preference text.
+
+\begin{table}[h]
+  \centering
+  \caption{Current route-candidate baseline results. These are preliminary and use only three held-out pseudo-history queries.}
+  \label{tab:route_candidate_results}
+  \begin{tabular}{lccccc}
+    \toprule
+    Method & Hit@1 & Hit@3 & MRR & NDCG@3 & Mean Dist. \\
+    \midrule
+    Random & 0.000 & 0.667 & 0.344 & 0.645 & 2.234 \\
+    Shortest-distance & 0.333 & 0.667 & 0.528 & 0.740 & 2.143 \\
+    Profile & 0.333 & 0.667 & 0.511 & 0.840 & 2.116 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The profile method has the best NDCG@3 and mean feature distance in this small run, while shortest-distance has slightly higher MRR. Because $n=3$, these numbers should be interpreted as smoke-test evidence that the evaluation is functioning, not as proof of superiority.
+
+\textbf{TODO:} Add results for prompt/SBERT and hybrid once preference text is available. Add a stronger learned baseline if enough records are collected.

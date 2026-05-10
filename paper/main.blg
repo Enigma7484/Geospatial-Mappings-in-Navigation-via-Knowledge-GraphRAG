@@ -1,0 +1,71 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 21 items.
+The style file: ACM-Reference-Format.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'wiz_functions' (item size: 4) to 6000 items.
+Database file #1: references.bib
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'wiz_functions' (item size: 4) to 9000 items.
+Reallocating 'glb_str_end' (item size: 4) to 20 items.
+Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
+Reallocating 'global_strs' (item size: 1) to 4000000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Warning--empty publisher in chen2012popular
+Warning--empty address in chen2012popular
+Warning--page numbers missing in both pages and numpages fields in chen2012popular
+Warning--page numbers missing in both pages and numpages fields in tian2023drpk
+Warning--empty publisher in nasr2019
+Warning--empty address in nasr2019
+Warning--page numbers missing in both pages and numpages fields in nasr2019
+Warning--empty publisher in userhabits2024
+Warning--empty address in userhabits2024
+Warning--page numbers missing in both pages and numpages fields in userhabits2024
+Warning--empty publisher in wang2025pts
+Warning--empty address in wang2025pts
+Warning--page numbers missing in both pages and numpages fields in wang2025pts
+You've used 5 entries,
+            6273 wiz_defined-function locations,
+            1548 strings with 19426 characters,
+and the built_in function-call counts, 4861 in all, are:
+= -- 523
+> -- 113
+< -- 0
++ -- 33
+- -- 44
+* -- 291
+:= -- 440
+add.period$ -- 26
+call.type$ -- 5
+change.case$ -- 27
+chr.to.int$ -- 5
+cite$ -- 18
+duplicate$ -- 506
+empty$ -- 360
+format.name$ -- 48
+if$ -- 1162
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 24
+newline$ -- 87
+num.names$ -- 35
+pop$ -- 246
+preamble$ -- 1
+purify$ -- 67
+quote$ -- 0
+skip$ -- 171
+stack$ -- 0
+substring$ -- 286
+swap$ -- 24
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 136
+warning$ -- 13
+while$ -- 31
+width$ -- 0
+write$ -- 136
+(There were 13 warnings)

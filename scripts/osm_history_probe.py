@@ -1,3 +1,4 @@
+import argparse
 import json
 import time
 import requests
@@ -67,5 +68,22 @@ def probe_trackpoints(bbox: Dict[str, float], max_pages: int = 3) -> Dict[str, A
     return summary
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Probe OSM public GPS trackpoints for exploratory pseudo-history signals. "
+            "These public trackpoints are area-level movement signals, not clean per-user histories."
+        )
+    )
+    parser.add_argument("--max-pages", type=int, default=3, help="Number of OSM trackpoint pages to request.")
+    parser.add_argument("--west", type=float, default=TORONTO_UOFT_BBOX["west"])
+    parser.add_argument("--south", type=float, default=TORONTO_UOFT_BBOX["south"])
+    parser.add_argument("--east", type=float, default=TORONTO_UOFT_BBOX["east"])
+    parser.add_argument("--north", type=float, default=TORONTO_UOFT_BBOX["north"])
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    print(json.dumps(probe_trackpoints(TORONTO_UOFT_BBOX, max_pages=3), indent=2))
+    args = parse_args()
+    bbox = {"west": args.west, "south": args.south, "east": args.east, "north": args.north}
+    print(json.dumps(probe_trackpoints(bbox, max_pages=args.max_pages), indent=2))

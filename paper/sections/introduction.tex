@@ -1,0 +1,15 @@
+Route recommendation is not only a shortest-path problem. Pedestrians may prefer greener, simpler, better-lit, or less busy routes depending on trip context, time of day, and historical behavior. Existing personalized routing work commonly relies on clean navigation histories or large-scale trajectory datasets, which are difficult to obtain for a small research prototype. This project investigates a more constrained question: can public OSM GPS trace signals provide exploratory historical movement evidence for preference-aware route ranking?
+
+We present a prototype for dynamic OSM-based profile routing. Given an origin and destination, the backend generates candidate walking routes from OpenStreetMap, extracts interpretable route features, constructs a dynamic pseudo-history profile from prior trace-derived records, and ranks candidates using profile, prompt, or hybrid modes. A companion interface can expose these ranked routes as a product-facing demonstration; the GUI is important because route recommendation is ultimately a user-facing decision aid rather than only an offline model.
+
+The core challenge is research validity. OSM public GPS trackpoints are not automatically clean user histories. They may be sparse, noisy, or mixed across contributors. Therefore, this paper uses cautious terminology: OSM-derived historical movement signals and pseudo-history profiles. The current prototype explicitly measures reconstruction quality before using trace-derived records for ranking.
+
+This draft makes three contributions to be validated and refined:
+
+\begin{itemize}
+  \item A working FastAPI-based route-ranking pipeline that combines OSM route features, dynamic pseudo-history profiles, and optional natural-language preference ranking.
+  \item A trace-processing pipeline that converts public OSM GPS trackpoints into pseudo-history records with reconstruction diagnostics.
+  \item A baseline evaluation scaffold comparing random, shortest-distance, profile, prompt/SBERT, and hybrid ranking when the required inputs are available.
+\end{itemize}
+
+\textbf{TODO:} Clarify the final target venue and expected paper length. Add a short motivating GUI screenshot or system figure once Phase 6 diagrams are complete.

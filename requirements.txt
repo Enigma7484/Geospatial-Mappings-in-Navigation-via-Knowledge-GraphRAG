@@ -5,6 +5,7 @@ networkx
 numpy
 geopandas
 shapely
+torch==2.5.1
 sentence-transformers
 scikit-learn
 pydantic

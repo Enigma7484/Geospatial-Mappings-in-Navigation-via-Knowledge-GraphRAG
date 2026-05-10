@@ -1,0 +1,25 @@
+Let a route-ranking request be defined by origin $o$, destination $d$, request context $c$, optional preference text $p$, and optional historical records $H_u$ for a user or pseudo-user. The system must generate a candidate set $R = \{r_1,\ldots,r_k\}$ and return an ordering that places routes aligned with observed or inferred preferences near the top.
+
+Each route $r_i$ is represented by an interpretable feature vector:
+
+\begin{equation}
+x_i = [\mathrm{distance}, \mathrm{major}, \mathrm{walk}, \mathrm{residential}, \mathrm{service}, \mathrm{turns}, \ldots].
+\end{equation}
+
+For OSM-derived pseudo-history evaluation, the held-out record is not treated as a generated candidate. Instead, it is treated as an observed reference route with feature vector $x^\ast$. The oracle generated candidate is:
+
+\begin{equation}
+r^\ast = \arg\min_{r_i \in R} \mathrm{dist}(\hat{x}_i, \hat{x}^\ast),
+\end{equation}
+
+where $\hat{x}$ denotes min-max normalized features within the evaluation set.
+
+The research question is:
+
+\begin{quote}
+Can dynamic profiles built from OSM-derived historical movement signals rank generated OSM route candidates closer to observed pseudo-route behavior than non-personalized baselines?
+\end{quote}
+
+This is intentionally narrower than claiming full personalized navigation. The current evidence supports prototype analysis and baseline design, while final submission requires larger data, stronger reconstruction, and external validation.
+
+\textbf{TODO:} Decide whether the final paper frames this as route recommendation, reranking, or trace-derived preference modeling.

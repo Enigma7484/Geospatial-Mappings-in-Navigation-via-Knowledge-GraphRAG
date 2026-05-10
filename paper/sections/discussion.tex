@@ -1,0 +1,9 @@
+The current prototype is strongest as a research scaffold: it exposes the full chain from OSM public GPS signals to route reconstruction, feature extraction, profile construction, candidate generation, ranking, and evaluation. The GUI/demo angle remains valuable because it shows how a user would interact with ranked routes and profile explanations.
+
+The main limitation is data validity. OSM public GPS trackpoints cannot be assumed to represent clean, persistent user histories. The current pseudo-history profiles are useful for exploring whether trace-derived movement signals can inform route ranking, but they are not equivalent to logged user route choices. This affects both profile construction and evaluation.
+
+The second limitation is reconstruction quality. GPS-to-route distance is low, but route-distance ratio is high for several segments. This suggests the approximate nearest-node plus shortest-path stitching method can overbuild routes. Before submission, the pipeline should improve map matching, segment splitting, or simplification so strict usability passes without relaxing the route-distance-ratio threshold.
+
+The third limitation is evaluation size. The current route-candidate evaluation uses only three held-out queries. This is enough to expose the weakness of the old history-record ranking setup, but not enough for a publishable claim. The next version should add more cities or bounding boxes, more OSM trace pages where allowed, and preferably a clean trajectory dataset for comparison.
+
+\textbf{TODO:} Add an error analysis table showing which segments fail strict route-distance-ratio checks and why.

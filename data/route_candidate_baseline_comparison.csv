@@ -1,0 +1,6 @@
+method,status,num_queries,hit_at_1,hit_at_3,mrr,ndcg_at_3,mean_feature_distance,mean_path_precision,mean_path_recall,mean_path_f1,mean_path_ndtw,mean_path_edit_distance,mean_path_max_distance_m,mean_path_length_ratio_to_reference,skip_reason,description
+random,ran,8,0.375,0.75,0.583333333,0.66772903,2.622154985,0.748230936,0.511563891,0.596518923,0.330454698,210.75,179.6833236,0.264565884,,Randomly permutes generated OSM route candidates; deterministic seed for reproducibility.
+shortest_distance,ran,8,0.25,0.625,0.45625,0.689856007,2.578528892,0.73592033,0.52201601,0.601266332,0.344322799,209.375,187.0853545,0.257336021,,Ranks generated candidates by shortest OSM route distance.
+profile,ran,8,0.375,0.625,0.539583333,0.726584962,2.581628719,0.82280637,0.520489335,0.630287749,0.351346132,206.875,170.5706392,0.26344429,,Builds a dynamic profile from earlier pseudo-history records and scores generated candidates.
+prompt_sbert,ran,8,0.25,0.5,0.48125,0.673316968,2.551653244,0.74041462,0.5245449,0.604406237,0.340047332,209.75,183.8052778,0.259926608,,Ranks generated route summaries by semantic similarity to preference text using SBERT.
+hybrid,ran,8,0.25,0.5,0.466666667,0.672226231,2.612696245,0.74990893,0.522896154,0.605294955,0.339691327,209.25,185.6509908,0.263496542,,Combines profile and prompt/SBERT scores using the backend's 0.75/0.25 weighting.

@@ -1,0 +1,2413 @@
+{
+  "metadata": {
+    "history_path": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\user_histories_osm_trace.json",
+    "json_output_path": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\route_candidate_baseline_comparison.json",
+    "csv_output_path": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\route_candidate_baseline_comparison.csv",
+    "dist_meters": 4000,
+    "k_routes": 5,
+    "min_history_records": 3,
+    "max_tests": null,
+    "feature_names": [
+      "distance_km",
+      "major_pct",
+      "walk_pct",
+      "residential_pct",
+      "service_pct",
+      "intersections",
+      "turns",
+      "park_near_pct",
+      "safety_score",
+      "lit_pct",
+      "signal_cnt",
+      "crossing_cnt",
+      "tunnel_m"
+    ],
+    "evaluation_type": "route_candidate_ranking",
+    "paper_aligned_proxy_metrics": {
+      "path_precision_recall_f1": "Approximate NASR-style overlap: point coverage within 30 meters between top-ranked generated route and held-out reconstructed route.",
+      "path_edit_distance": "Approximate NASR-style edit distance over rounded coordinate tokens; lower is better.",
+      "path_ndtw": "RICK-style normalized dynamic time warping over generated route coordinates and held-out reconstructed route coordinates; higher is better.",
+      "path_max_distance_m": "RICK-style maximum nearest-point distance between the top-ranked generated route and held-out reconstructed route; lower is better."
+    },
+    "old_evaluation_note": "scripts/evaluate_baselines.py is retained as a history-record ranking sanity check: it ranks the held-out history record against previous history records. This script is stricter: it generates OSM route candidates for the held-out origin/destination and selects the oracle as the generated candidate closest to the observed pseudo-route features.",
+    "oracle_definition": "For each held-out OSM pseudo-history record, the oracle is the generated route candidate with minimum normalized feature distance to the held-out reconstructed route features.",
+    "note": "These are preliminary pseudo-history route-candidate baselines. They do not establish final route-choice performance against independently observed user decisions. Synthetic preference text, when present, is used only as a labeled prompt-baseline ablation."
+  },
+  "summary": [
+    {
+      "method": "random",
+      "status": "ran",
+      "num_queries": 8,
+      "hit_at_1": 0.375,
+      "hit_at_3": 0.75,
+      "mrr": 0.5833333333333333,
+      "ndcg_at_3": 0.6677290297898283,
+      "mean_feature_distance": 2.6221549846252303,
+      "mean_path_precision": 0.7482309357309357,
+      "mean_path_recall": 0.5115638907742066,
+      "mean_path_f1": 0.596518922861539,
+      "mean_path_ndtw": 0.3304546983195499,
+      "mean_path_edit_distance": 210.75,
+      "mean_path_max_distance_m": 179.6833235966114,
+      "mean_path_length_ratio_to_reference": 0.26456588400084835,
+      "skip_reason": "",
+      "description": "Randomly permutes generated OSM route candidates; deterministic seed for reproducibility."
+    },
+    {
+      "method": "shortest_distance",
+      "status": "ran",
+      "num_queries": 8,
+      "hit_at_1": 0.25,
+      "hit_at_3": 0.625,
+      "mrr": 0.45624999999999993,
+      "ndcg_at_3": 0.6898560073023613,
+      "mean_feature_distance": 2.5785288920838183,
+      "mean_path_precision": 0.7359203296703296,
+      "mean_path_recall": 0.5220160101765796,
+      "mean_path_f1": 0.6012663323898922,
+      "mean_path_ndtw": 0.34432279935979304,
+      "mean_path_edit_distance": 209.375,
+      "mean_path_max_distance_m": 187.08535452177267,
+      "mean_path_length_ratio_to_reference": 0.25733602098634745,
+      "skip_reason": "",
+      "description": "Ranks generated candidates by shortest OSM route distance."
+    },
+    {
+      "method": "profile",
+      "status": "ran",
+      "num_queries": 8,
+      "hit_at_1": 0.375,
+      "hit_at_3": 0.625,
+      "mrr": 0.5395833333333333,
+      "ndcg_at_3": 0.7265849622692704,
+      "mean_feature_distance": 2.581628718545777,
+      "mean_path_precision": 0.822806370123587,
+      "mean_path_recall": 0.520489334981091,
+      "mean_path_f1": 0.6302877492994698,
+      "mean_path_ndtw": 0.351346131971467,
+      "mean_path_edit_distance": 206.875,
+      "mean_path_max_distance_m": 170.57063924011413,
+      "mean_path_length_ratio_to_reference": 0.26344429027249017,
+      "skip_reason": "",
+      "description": "Builds a dynamic profile from earlier pseudo-history records and scores generated candidates."
+    },
+    {
+      "method": "prompt_sbert",
+      "status": "ran",
+      "num_queries": 8,
+      "hit_at_1": 0.25,
+      "hit_at_3": 0.5,
+      "mrr": 0.48125,
+      "ndcg_at_3": 0.6733169677656637,
+      "mean_feature_distance": 2.5516532443689295,
+      "mean_path_precision": 0.7404146202443987,
+      "mean_path_recall": 0.5245448995957234,
+      "mean_path_f1": 0.6044062372310611,
+      "mean_path_ndtw": 0.34004733150589345,
+      "mean_path_edit_distance": 209.75,
+      "mean_path_max_distance_m": 183.80527779268846,
+      "mean_path_length_ratio_to_reference": 0.2599266076798191,
+      "skip_reason": "",
+      "description": "Ranks generated route summaries by semantic similarity to preference text using SBERT."
+    },
+    {
+      "method": "hybrid",
+      "status": "ran",
+      "num_queries": 8,
+      "hit_at_1": 0.25,
+      "hit_at_3": 0.5,
+      "mrr": 0.4666666666666667,
+      "ndcg_at_3": 0.6722262310186051,
+      "mean_feature_distance": 2.6126962452942117,
+      "mean_path_precision": 0.7499089302821871,
+      "mean_path_recall": 0.5228961535643801,
+      "mean_path_f1": 0.6052949547523596,
+      "mean_path_ndtw": 0.33969132740494656,
+      "mean_path_edit_distance": 209.25,
+      "mean_path_max_distance_m": 185.6509908236515,
+      "mean_path_length_ratio_to_reference": 0.26349654223209873,
+      "skip_reason": "",
+      "description": "Combines profile and prompt/SBERT scores using the backend's 0.75/0.25 weighting."
+    }
+  ],
+  "observed_reconstruction_summary": {
+    "num_queries": 8,
+    "mean_observed_gps_to_route_median_m": 6.3129116525386415,
+    "median_observed_gps_to_route_median_m": 7.406670901214989,
+    "mean_observed_route_distance_ratio": 2.4795583789880116,
+    "median_observed_route_distance_ratio": 2.408898960365486,
+    "path_reference_types": [
+      "heldout_reconstructed_route"
+    ],
+    "note": "These diagnostics come from the held-out OSM pseudo-history reconstruction. Path-overlap metrics compare each method's top generated candidate to the held-out reconstructed route when reconstructed coordinates are present. Older history files fall back to the generated oracle candidate."
+  },
+  "skipped": {},
+  "attempted_records": 8,
+  "num_queries": 8,
+  "per_query_results": [
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 3,
+      "timestamp": "2023-10-15T22:59:23+00:00",
+      "origin": {
+        "lat": 43.6569883,
+        "lon": -79.4049947
+      },
+      "destination": {
+        "lat": 43.6579893,
+        "lon": -79.4029746
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 1,
+      "oracle_feature_distance": 2.592019214281519,
+      "observed_gps_to_route_median_m": 3.9457992020252677,
+      "observed_gps_to_route_mean_m": 4.703895189578096,
+      "observed_route_distance_ratio": 2.938755404774734,
+      "observed_raw_trace_distance_km": 0.261,
+      "observed_reconstructed_coordinate_count": 37,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        2.685735784193887,
+        2.592019214281519,
+        2.635477392942697,
+        2.68060337670229,
+        2.626439499892911
+      ],
+      "candidate_relevances": [
+        0.0,
+        0.03489418820120338,
+        0.018713080991425546,
+        0.0019109874924414516,
+        0.022078226998332062
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.31 km. Top ways: footway, service. 94.5% on footpaths. 0.0% residential streets. 5.5% service roads. 0.0% major roads. Approx 12 intersections and 5 turns. 33.9% near parks, closest park 4m. Safety proxy 50.8/100.",
+        "Walking route of 0.33 km. Top ways: footway, service. 94.7% on footpaths. 0.0% residential streets. 5.3% service roads. 0.0% major roads. Approx 10 intersections and 5 turns. 60.2% near parks, closest park 3m. Safety proxy 51.3/100.",
+        "Walking route of 0.32 km. Top ways: footway, service. 94.6% on footpaths. 0.0% residential streets. 5.4% service roads. 0.0% major roads. Approx 11 intersections and 5 turns. 41.1% near parks, closest park 4m. Safety proxy 50.9/100.",
+        "Walking route of 0.34 km. Top ways: footway, service. 94.9% on footpaths. 0.0% residential streets. 5.1% service roads. 0.0% major roads. Approx 14 intersections and 9 turns. 31.6% near parks, closest park 4m. Safety proxy 51.8/100.",
+        "Walking route of 0.34 km. Top ways: footway, service. 94.9% on footpaths. 0.0% residential streets. 5.1% service roads. 0.0% major roads. Approx 13 intersections and 9 turns. 38.3% near parks, closest park 4m. Safety proxy 51.8/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-15T22:59:23+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 2,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_3": 0.9187015101726755,
+          "top1_feature_distance": 2.626439499892911,
+          "oracle_feature_distance": 2.592019214281519,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 1.0,
+          "path_f1": 1.0,
+          "path_max_distance_m": 29.478860495974086,
+          "path_ndtw": 0.7419860855081104,
+          "path_edit_distance": 25,
+          "path_length_ratio_to_reference": 0.4419619613535154,
+          "ranked_indices": [
+            4,
+            1,
+            2,
+            0,
+            3
+          ],
+          "ranked_relevances": [
+            0.022078226998332062,
+            0.03489418820120338,
+            0.018713080991425546,
+            0.0,
+            0.0019109874924414516
+          ],
+          "ranked_feature_distances": [
+            2.626439499892911,
+            2.592019214281519,
+            2.635477392942697,
+            2.685735784193887,
+            2.68060337670229
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-15T22:59:23+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.5028096022091609,
+          "top1_feature_distance": 2.685735784193887,
+          "oracle_feature_distance": 2.592019214281519,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 1.0,
+          "path_f1": 1.0,
+          "path_max_distance_m": 29.478860495974086,
+          "path_ndtw": 0.7829027392968696,
+          "path_edit_distance": 23,
+          "path_length_ratio_to_reference": 0.4101849059498974,
+          "ranked_indices": [
+            0,
+            2,
+            1,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.018713080991425546,
+            0.03489418820120338,
+            0.0019109874924414516,
+            0.022078226998332062
+          ],
+          "ranked_feature_distances": [
+            2.685735784193887,
+            2.635477392942697,
+            2.592019214281519,
+            2.68060337670229,
+            2.626439499892911
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-15T22:59:23+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.8556038343484075,
+          "top1_feature_distance": 2.592019214281519,
+          "oracle_feature_distance": 2.592019214281519,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.8108108108108109,
+          "path_f1": 0.8955223880597014,
+          "path_max_distance_m": 40.37089268946998,
+          "path_ndtw": 0.6708992167582897,
+          "path_edit_distance": 25,
+          "path_length_ratio_to_reference": 0.425691028256585,
+          "ranked_indices": [
+            1,
+            4,
+            3,
+            2,
+            0
+          ],
+          "ranked_relevances": [
+            0.03489418820120338,
+            0.022078226998332062,
+            0.0019109874924414516,
+            0.018713080991425546,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            2.592019214281519,
+            2.626439499892911,
+            2.68060337670229,
+            2.635477392942697,
+            2.685735784193887
+          ],
+          "scores": [
+            0.0,
+            1.0,
+            0.21132735726733948,
+            0.7053890228421161,
+            0.9000324129410916
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-15T22:59:23+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.5321004906747138,
+          "top1_feature_distance": 2.635477392942697,
+          "oracle_feature_distance": 2.592019214281519,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 1.0,
+          "path_f1": 1.0,
+          "path_max_distance_m": 29.478860495974086,
+          "path_ndtw": 0.7499501192560796,
+          "path_edit_distance": 24,
+          "path_length_ratio_to_reference": 0.411994697583643,
+          "ranked_indices": [
+            2,
+            3,
+            4,
+            0,
+            1
+          ],
+          "ranked_relevances": [
+            0.018713080991425546,
+            0.0019109874924414516,
+            0.022078226998332062,
+            0.0,
+            0.03489418820120338
+          ],
+          "ranked_feature_distances": [
+            2.635477392942697,
+            2.68060337670229,
+            2.626439499892911,
+            2.685735784193887,
+            2.592019214281519
+          ],
+          "scores": [
+            0.472783910967411,
+            0.0,
+            1.0,
+            0.6249945968376371,
+            0.5112774804837775
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-15T22:59:23+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 2,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_3": 0.774305344521083,
+          "top1_feature_distance": 2.626439499892911,
+          "oracle_feature_distance": 2.592019214281519,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 1.0,
+          "path_f1": 1.0,
+          "path_max_distance_m": 29.478860495974086,
+          "path_ndtw": 0.7419860855081104,
+          "path_edit_distance": 25,
+          "path_length_ratio_to_reference": 0.4419619613535154,
+          "ranked_indices": [
+            4,
+            1,
+            3,
+            2,
+            0
+          ],
+          "ranked_relevances": [
+            0.022078226998332062,
+            0.03489418820120338,
+            0.0019109874924414516,
+            0.018713080991425546,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            2.626439499892911,
+            2.592019214281519,
+            2.68060337670229,
+            2.635477392942697,
+            2.685735784193887
+          ],
+          "scores": [
+            0.11819597774185275,
+            0.75,
+            0.4084955179505046,
+            0.6852904163409964,
+            0.8028436798267631
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 4,
+      "timestamp": "2023-10-15T23:13:52+00:00",
+      "origin": {
+        "lat": 43.6580034,
+        "lon": -79.4029525
+      },
+      "destination": {
+        "lat": 43.6570401,
+        "lon": -79.4049962
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 1,
+      "oracle_feature_distance": 2.790087610568285,
+      "observed_gps_to_route_median_m": 4.129598841711723,
+      "observed_gps_to_route_mean_m": 6.8612442864547925,
+      "observed_route_distance_ratio": 1.9321124050027136,
+      "observed_raw_trace_distance_km": 1.002,
+      "observed_reconstructed_coordinate_count": 61,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        2.8784665778064515,
+        2.790087610568285,
+        2.823841781710188,
+        2.917044468582808,
+        2.8599473425156305
+      ],
+      "candidate_relevances": [
+        0.013224992348196407,
+        0.04352242805410589,
+        0.03195106823925131,
+        0.0,
+        0.01957362209665492
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.31 km. Top ways: footway, service. 95.8% on footpaths. 0.0% residential streets. 4.2% service roads. 0.0% major roads. Approx 12 intersections and 4 turns. 34.4% near parks, closest park 4m. Safety proxy 51.0/100.",
+        "Walking route of 0.32 km. Top ways: footway, service. 96.0% on footpaths. 0.0% residential streets. 4.0% service roads. 0.0% major roads. Approx 10 intersections and 4 turns. 61.0% near parks, closest park 3m. Safety proxy 51.5/100.",
+        "Walking route of 0.31 km. Top ways: footway, service. 95.9% on footpaths. 0.0% residential streets. 4.1% service roads. 0.0% major roads. Approx 11 intersections and 4 turns. 41.6% near parks, closest park 4m. Safety proxy 51.0/100.",
+        "Walking route of 0.33 km. Top ways: footway, service. 96.1% on footpaths. 0.0% residential streets. 3.9% service roads. 0.0% major roads. Approx 14 intersections and 8 turns. 32.0% near parks, closest park 4m. Safety proxy 52.0/100.",
+        "Walking route of 0.33 km. Top ways: footway, service. 96.1% on footpaths. 0.0% residential streets. 3.9% service roads. 0.0% major roads. Approx 13 intersections and 8 turns. 38.8% near parks, closest park 4m. Safety proxy 52.0/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-15T23:13:52+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.9567933012327304,
+          "top1_feature_distance": 2.790087610568285,
+          "oracle_feature_distance": 2.790087610568285,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.6363636363636364,
+          "path_recall": 0.26229508196721313,
+          "path_f1": 0.37147595356550583,
+          "path_max_distance_m": 314.9161613677064,
+          "path_ndtw": 0.035508072198523644,
+          "path_edit_distance": 54,
+          "path_length_ratio_to_reference": 0.16640663582127646,
+          "ranked_indices": [
+            1,
+            2,
+            0,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.04352242805410589,
+            0.03195106823925131,
+            0.013224992348196407,
+            0.0,
+            0.01957362209665492
+          ],
+          "ranked_feature_distances": [
+            2.790087610568285,
+            2.823841781710188,
+            2.8784665778064515,
+            2.917044468582808,
+            2.8599473425156305
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-15T23:13:52+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.7505988577335176,
+          "top1_feature_distance": 2.8784665778064515,
+          "oracle_feature_distance": 2.790087610568285,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.5384615384615384,
+          "path_recall": 0.2786885245901639,
+          "path_f1": 0.3672839506172839,
+          "path_max_distance_m": 314.9161613677064,
+          "path_ndtw": 0.033119682063007284,
+          "path_edit_distance": 55,
+          "path_length_ratio_to_reference": 0.1602641389189351,
+          "ranked_indices": [
+            0,
+            2,
+            1,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.013224992348196407,
+            0.03195106823925131,
+            0.04352242805410589,
+            0.0,
+            0.01957362209665492
+          ],
+          "ranked_feature_distances": [
+            2.8784665778064515,
+            2.823841781710188,
+            2.790087610568285,
+            2.917044468582808,
+            2.8599473425156305
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-15T23:13:52+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.7604932533842924,
+          "top1_feature_distance": 2.790087610568285,
+          "oracle_feature_distance": 2.790087610568285,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.6363636363636364,
+          "path_recall": 0.26229508196721313,
+          "path_f1": 0.37147595356550583,
+          "path_max_distance_m": 314.9161613677064,
+          "path_ndtw": 0.035508072198523644,
+          "path_edit_distance": 54,
+          "path_length_ratio_to_reference": 0.16640663582127646,
+          "ranked_indices": [
+            1,
+            4,
+            3,
+            2,
+            0
+          ],
+          "ranked_relevances": [
+            0.04352242805410589,
+            0.01957362209665492,
+            0.0,
+            0.03195106823925131,
+            0.013224992348196407
+          ],
+          "ranked_feature_distances": [
+            2.790087610568285,
+            2.8599473425156305,
+            2.917044468582808,
+            2.823841781710188,
+            2.8784665778064515
+          ],
+          "scores": [
+            0.0,
+            1.0,
+            0.2153835620417536,
+            0.6538524120900152,
+            0.8521125033440748
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-15T23:13:52+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 2,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_3": 0.5069737255809306,
+          "top1_feature_distance": 2.917044468582808,
+          "oracle_feature_distance": 2.790087610568285,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.6,
+          "path_recall": 0.2786885245901639,
+          "path_f1": 0.3805970149253731,
+          "path_max_distance_m": 314.9161613677064,
+          "path_ndtw": 0.03290590082927499,
+          "path_edit_distance": 56,
+          "path_length_ratio_to_reference": 0.17213518064280303,
+          "ranked_indices": [
+            3,
+            1,
+            4,
+            2,
+            0
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.04352242805410589,
+            0.01957362209665492,
+            0.03195106823925131,
+            0.013224992348196407
+          ],
+          "ranked_feature_distances": [
+            2.917044468582808,
+            2.790087610568285,
+            2.8599473425156305,
+            2.823841781710188,
+            2.8784665778064515
+          ],
+          "scores": [
+            0.0,
+            0.9043114303589955,
+            0.4155889410702548,
+            1.0,
+            0.8589677593075101
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-15T23:13:52+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.7604932533842924,
+          "top1_feature_distance": 2.790087610568285,
+          "oracle_feature_distance": 2.790087610568285,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.6363636363636364,
+          "path_recall": 0.26229508196721313,
+          "path_f1": 0.37147595356550583,
+          "path_max_distance_m": 314.9161613677064,
+          "path_ndtw": 0.035508072198523644,
+          "path_edit_distance": 54,
+          "path_length_ratio_to_reference": 0.16640663582127646,
+          "ranked_indices": [
+            1,
+            4,
+            3,
+            2,
+            0
+          ],
+          "ranked_relevances": [
+            0.04352242805410589,
+            0.01957362209665492,
+            0.0,
+            0.03195106823925131,
+            0.013224992348196407
+          ],
+          "ranked_feature_distances": [
+            2.790087610568285,
+            2.8599473425156305,
+            2.917044468582808,
+            2.823841781710188,
+            2.8784665778064515
+          ],
+          "scores": [
+            0.0,
+            0.9760778575897489,
+            0.26543490679887893,
+            0.7403893090675114,
+            0.8538263173349336
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 5,
+      "timestamp": "2023-10-15T23:47:33+00:00",
+      "origin": {
+        "lat": 43.6518929,
+        "lon": -79.3820878
+      },
+      "destination": {
+        "lat": 43.6522461,
+        "lon": -79.3873576
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 4,
+      "oracle_feature_distance": 2.7237489155867016,
+      "observed_gps_to_route_median_m": 7.820192512219112,
+      "observed_gps_to_route_mean_m": 8.029371473175706,
+      "observed_route_distance_ratio": 3.5672817891505324,
+      "observed_raw_trace_distance_km": 1.932,
+      "observed_reconstructed_coordinate_count": 304,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        2.8284271247461903,
+        2.7335624110304124,
+        2.7285911312496727,
+        2.724059276027996,
+        2.7237489155867016
+      ],
+      "candidate_relevances": [
+        0.0,
+        0.03353974118187353,
+        0.03529735400394185,
+        0.036899606783243444,
+        0.03700933576956911
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.52 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 16 intersections and 1 turns. 57.7% near parks, closest park 1m. Safety proxy 65.0/100.",
+        "Walking route of 0.52 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 18 intersections and 1 turns. 57.1% near parks, closest park 1m. Safety proxy 65.0/100.",
+        "Walking route of 0.52 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 17 intersections and 3 turns. 57.0% near parks, closest park 1m. Safety proxy 65.0/100.",
+        "Walking route of 0.52 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 17 intersections and 3 turns. 57.0% near parks, closest park 1m. Safety proxy 65.0/100.",
+        "Walking route of 0.52 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 17 intersections and 3 turns. 57.0% near parks, closest park 1m. Safety proxy 65.0/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2023-10-15T23:47:33+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.7012915468182648,
+          "top1_feature_distance": 2.7237489155867016,
+          "oracle_feature_distance": 2.7237489155867016,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7598684210526315,
+          "path_f1": 0.8635514018691589,
+          "path_max_distance_m": 64.16197207993139,
+          "path_ndtw": 0.6301115547048088,
+          "path_edit_distance": 289,
+          "path_length_ratio_to_reference": 0.07589150079910491,
+          "ranked_indices": [
+            4,
+            0,
+            2,
+            3,
+            1
+          ],
+          "ranked_relevances": [
+            0.03700933576956911,
+            0.0,
+            0.03529735400394185,
+            0.036899606783243444,
+            0.03353974118187353
+          ],
+          "ranked_feature_distances": [
+            2.7237489155867016,
+            2.8284271247461903,
+            2.7285911312496727,
+            2.724059276027996,
+            2.7335624110304124
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2023-10-15T23:47:33+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.4979517506805025,
+          "top1_feature_distance": 2.8284271247461903,
+          "oracle_feature_distance": 2.7237489155867016,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7598684210526315,
+          "path_f1": 0.8635514018691589,
+          "path_max_distance_m": 64.16197207993139,
+          "path_ndtw": 0.6290901182627104,
+          "path_edit_distance": 290,
+          "path_length_ratio_to_reference": 0.07501593298724117,
+          "ranked_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.03353974118187353,
+            0.03529735400394185,
+            0.036899606783243444,
+            0.03700933576956911
+          ],
+          "ranked_feature_distances": [
+            2.8284271247461903,
+            2.7335624110304124,
+            2.7285911312496727,
+            2.724059276027996,
+            2.7237489155867016
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2023-10-15T23:47:33+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.4979517506805025,
+          "top1_feature_distance": 2.8284271247461903,
+          "oracle_feature_distance": 2.7237489155867016,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7598684210526315,
+          "path_f1": 0.8635514018691589,
+          "path_max_distance_m": 64.16197207993139,
+          "path_ndtw": 0.6290901182627104,
+          "path_edit_distance": 290,
+          "path_length_ratio_to_reference": 0.07501593298724117,
+          "ranked_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.03353974118187353,
+            0.03529735400394185,
+            0.036899606783243444,
+            0.03700933576956911
+          ],
+          "ranked_feature_distances": [
+            2.8284271247461903,
+            2.7335624110304124,
+            2.7285911312496727,
+            2.724059276027996,
+            2.7237489155867016
+          ],
+          "scores": [
+            1.0,
+            0.042562462036267866,
+            0.04233777104308351,
+            0.002748973336519679,
+            0.0
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2023-10-15T23:47:33+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.6567747919664628,
+          "top1_feature_distance": 2.7335624110304124,
+          "oracle_feature_distance": 2.7237489155867016,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7697368421052632,
+          "path_f1": 0.8698884758364311,
+          "path_max_distance_m": 64.16197207993139,
+          "path_ndtw": 0.6382990871012227,
+          "path_edit_distance": 287,
+          "path_length_ratio_to_reference": 0.07583856591213121,
+          "ranked_indices": [
+            1,
+            0,
+            2,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.03353974118187353,
+            0.0,
+            0.03529735400394185,
+            0.036899606783243444,
+            0.03700933576956911
+          ],
+          "ranked_feature_distances": [
+            2.7335624110304124,
+            2.8284271247461903,
+            2.7285911312496727,
+            2.724059276027996,
+            2.7237489155867016
+          ],
+          "scores": [
+            0.5346861128725428,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2023-10-15T23:47:33+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.4979517506805025,
+          "top1_feature_distance": 2.8284271247461903,
+          "oracle_feature_distance": 2.7237489155867016,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7598684210526315,
+          "path_f1": 0.8635514018691589,
+          "path_max_distance_m": 64.16197207993139,
+          "path_ndtw": 0.6290901182627104,
+          "path_edit_distance": 290,
+          "path_length_ratio_to_reference": 0.07501593298724117,
+          "ranked_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.03353974118187353,
+            0.03529735400394185,
+            0.036899606783243444,
+            0.03700933576956911
+          ],
+          "ranked_feature_distances": [
+            2.8284271247461903,
+            2.7335624110304124,
+            2.7285911312496727,
+            2.724059276027996,
+            2.7237489155867016
+          ],
+          "scores": [
+            0.8836715282181357,
+            0.28192184652720087,
+            0.031753328282312636,
+            0.0020617300023897593,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 6,
+      "timestamp": "2023-10-16T02:51:53+00:00",
+      "origin": {
+        "lat": 43.6574973,
+        "lon": -79.3892464
+      },
+      "destination": {
+        "lat": 43.6450165,
+        "lon": -79.3823736
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 1,
+      "oracle_feature_distance": 3.0154671101078643,
+      "observed_gps_to_route_median_m": 6.993149290210866,
+      "observed_gps_to_route_mean_m": 7.40778428071699,
+      "observed_route_distance_ratio": 3.1986511608477324,
+      "observed_raw_trace_distance_km": 5.843,
+      "observed_reconstructed_coordinate_count": 732,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        3.1161250643796943,
+        3.0154671101078643,
+        3.096717662674181,
+        3.0501844784539314,
+        3.1542624080588935
+      ],
+      "candidate_relevances": [
+        0.012090732711952379,
+        0.04400245762572519,
+        0.01824348704714307,
+        0.03299596423526818,
+        0.0
+      ],
+      "candidate_summaries": [
+        "Walking route of 1.56 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 52 intersections and 2 turns. 56.0% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 1.78 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 34 intersections and 8 turns. 59.3% near parks, closest park 0m. Safety proxy 65.0/100.",
+        "Walking route of 1.56 km. Top ways: footway, pedestrian. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 53 intersections and 5 turns. 56.4% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 1.57 km. Top ways: footway, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 53 intersections and 4 turns. 57.8% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 1.77 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 34 intersections and 8 turns. 55.2% near parks, closest park 0m. Safety proxy 65.0/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 6,
+          "timestamp": "2023-10-16T02:51:53+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.2868786296555623,
+          "top1_feature_distance": 3.1161250643796943,
+          "oracle_feature_distance": 3.0154671101078643,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.8846153846153846,
+          "path_recall": 0.5027322404371585,
+          "path_f1": 0.6411149825783972,
+          "path_max_distance_m": 73.17405092787297,
+          "path_ndtw": 0.44397122823086693,
+          "path_edit_distance": 710,
+          "path_length_ratio_to_reference": 0.08327163494650008,
+          "ranked_indices": [
+            0,
+            4,
+            2,
+            1,
+            3
+          ],
+          "ranked_relevances": [
+            0.012090732711952379,
+            0.0,
+            0.01824348704714307,
+            0.04400245762572519,
+            0.03299596423526818
+          ],
+          "ranked_feature_distances": [
+            3.1161250643796943,
+            3.1542624080588935,
+            3.096717662674181,
+            3.0154671101078643,
+            3.0501844784539314
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 6,
+          "timestamp": "2023-10-16T02:51:53+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.5423019529564107,
+          "top1_feature_distance": 3.1161250643796943,
+          "oracle_feature_distance": 3.0154671101078643,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.8846153846153846,
+          "path_recall": 0.5027322404371585,
+          "path_f1": 0.6411149825783972,
+          "path_max_distance_m": 73.17405092787297,
+          "path_ndtw": 0.44397122823086693,
+          "path_edit_distance": 710,
+          "path_length_ratio_to_reference": 0.08327163494650008,
+          "ranked_indices": [
+            0,
+            2,
+            3,
+            4,
+            1
+          ],
+          "ranked_relevances": [
+            0.012090732711952379,
+            0.01824348704714307,
+            0.03299596423526818,
+            0.0,
+            0.04400245762572519
+          ],
+          "ranked_feature_distances": [
+            3.1161250643796943,
+            3.096717662674181,
+            3.0501844784539314,
+            3.1542624080588935,
+            3.0154671101078643
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 6,
+          "timestamp": "2023-10-16T02:51:53+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.8469518117154815,
+          "top1_feature_distance": 3.0501844784539314,
+          "oracle_feature_distance": 3.0154671101078643,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.8867924528301887,
+          "path_recall": 0.5027322404371585,
+          "path_f1": 0.6416858351265118,
+          "path_max_distance_m": 73.17405092787297,
+          "path_ndtw": 0.4438251567821552,
+          "path_edit_distance": 710,
+          "path_length_ratio_to_reference": 0.08396646614767565,
+          "ranked_indices": [
+            3,
+            0,
+            1,
+            2,
+            4
+          ],
+          "ranked_relevances": [
+            0.03299596423526818,
+            0.012090732711952379,
+            0.04400245762572519,
+            0.01824348704714307,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            3.0501844784539314,
+            3.1161250643796943,
+            3.0154671101078643,
+            3.096717662674181,
+            3.1542624080588935
+          ],
+          "scores": [
+            0.8437153014964448,
+            0.7867509037603843,
+            0.6915823942609117,
+            1.0,
+            0.0
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 6,
+          "timestamp": "2023-10-16T02:51:53+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 2,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.5,
+          "ndcg_at_3": 0.7039446607879649,
+          "top1_feature_distance": 3.096717662674181,
+          "oracle_feature_distance": 3.0154671101078643,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.8679245283018868,
+          "path_recall": 0.5027322404371585,
+          "path_f1": 0.6366782006920415,
+          "path_max_distance_m": 73.17405092787297,
+          "path_ndtw": 0.4439368604853464,
+          "path_edit_distance": 710,
+          "path_length_ratio_to_reference": 0.08372175658409575,
+          "ranked_indices": [
+            2,
+            1,
+            0,
+            4,
+            3
+          ],
+          "ranked_relevances": [
+            0.01824348704714307,
+            0.04400245762572519,
+            0.012090732711952379,
+            0.0,
+            0.03299596423526818
+          ],
+          "ranked_feature_distances": [
+            3.096717662674181,
+            3.0154671101078643,
+            3.1161250643796943,
+            3.1542624080588935,
+            3.0501844784539314
+          ],
+          "scores": [
+            0.24389681447335523,
+            0.2878577133050294,
+            1.0,
+            0.0,
+            0.21705784827057192
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 6,
+          "timestamp": "2023-10-16T02:51:53+00:00",
+          "oracle_candidate_index": 1,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.6100292603646287,
+          "top1_feature_distance": 3.096717662674181,
+          "oracle_feature_distance": 3.0154671101078643,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.8679245283018868,
+          "path_recall": 0.5027322404371585,
+          "path_f1": 0.6366782006920415,
+          "path_max_distance_m": 73.17405092787297,
+          "path_ndtw": 0.4439368604853464,
+          "path_edit_distance": 710,
+          "path_length_ratio_to_reference": 0.08372175658409575,
+          "ranked_indices": [
+            2,
+            3,
+            0,
+            1,
+            4
+          ],
+          "ranked_relevances": [
+            0.01824348704714307,
+            0.03299596423526818,
+            0.012090732711952379,
+            0.04400245762572519,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            3.096717662674181,
+            3.0501844784539314,
+            3.1161250643796943,
+            3.0154671101078643,
+            3.1542624080588935
+          ],
+          "scores": [
+            0.6937606797406725,
+            0.6620276061465455,
+            0.7686867956956838,
+            0.75,
+            0.05426446206764298
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 7,
+      "timestamp": "2023-10-16T11:26:31+00:00",
+      "origin": {
+        "lat": 43.6570723,
+        "lon": -79.4049987
+      },
+      "destination": {
+        "lat": 43.6699964,
+        "lon": -79.3896551
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 0,
+      "oracle_feature_distance": 2.7017558781649904,
+      "observed_gps_to_route_median_m": 7.918116882577565,
+      "observed_gps_to_route_mean_m": 9.11697305618911,
+      "observed_route_distance_ratio": 2.4457901323083067,
+      "observed_raw_trace_distance_km": 3.495,
+      "observed_reconstructed_coordinate_count": 306,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        2.7017558781649904,
+        3.2216929142632433,
+        2.8951279775564243,
+        3.054106170107404,
+        2.7018119925223054
+      ],
+      "candidate_relevances": [
+        0.1613862804230537,
+        0.0,
+        0.10136438990228835,
+        0.052018224149760095,
+        0.16136886276134343
+      ],
+      "candidate_summaries": [
+        "Walking route of 2.45 km. Top ways: footway, pedestrian, service. 93.0% on footpaths. 0.0% residential streets. 7.0% service roads. 0.0% major roads. Approx 76 intersections and 21 turns. 56.1% near parks, closest park 0m. Safety proxy 59.4/100.",
+        "Walking route of 2.50 km. Top ways: footway, pedestrian, service, steps. 99.5% on footpaths. 0.0% residential streets. 0.5% service roads. 0.0% major roads. Approx 68 intersections and 24 turns. 84.0% near parks, closest park 0m. Safety proxy 62.8/100.",
+        "Walking route of 2.48 km. Top ways: footway, service. 99.5% on footpaths. 0.0% residential streets. 0.5% service roads. 0.0% major roads. Approx 69 intersections and 16 turns. 58.2% near parks, closest park 0m. Safety proxy 61.6/100.",
+        "Walking route of 2.64 km. Top ways: footway, service. 99.5% on footpaths. 0.0% residential streets. 0.5% service roads. 0.0% major roads. Approx 47 intersections and 11 turns. 65.3% near parks, closest park 2m. Safety proxy 64.1/100.",
+        "Walking route of 2.45 km. Top ways: footway, pedestrian, service. 93.0% on footpaths. 0.0% residential streets. 7.0% service roads. 0.0% major roads. Approx 76 intersections and 21 turns. 56.1% near parks, closest park 0m. Safety proxy 59.4/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 7,
+          "timestamp": "2023-10-16T11:26:31+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.618725543985429,
+          "top1_feature_distance": 2.7017558781649904,
+          "oracle_feature_distance": 2.7017558781649904,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.2597402597402597,
+          "path_recall": 0.25163398692810457,
+          "path_f1": 0.25562287326749106,
+          "path_max_distance_m": 447.4684496784305,
+          "path_ndtw": 0.029101258077647348,
+          "path_edit_distance": 288,
+          "path_length_ratio_to_reference": 0.28616087877290936,
+          "ranked_indices": [
+            0,
+            3,
+            1,
+            2,
+            4
+          ],
+          "ranked_relevances": [
+            0.1613862804230537,
+            0.052018224149760095,
+            0.0,
+            0.10136438990228835,
+            0.16136886276134343
+          ],
+          "ranked_feature_distances": [
+            2.7017558781649904,
+            3.054106170107404,
+            3.2216929142632433,
+            2.8951279775564243,
+            2.7018119925223054
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 7,
+          "timestamp": "2023-10-16T11:26:31+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 1.0,
+          "top1_feature_distance": 2.7017558781649904,
+          "oracle_feature_distance": 2.7017558781649904,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.2597402597402597,
+          "path_recall": 0.25163398692810457,
+          "path_f1": 0.25562287326749106,
+          "path_max_distance_m": 447.4684496784305,
+          "path_ndtw": 0.029101258077647348,
+          "path_edit_distance": 288,
+          "path_length_ratio_to_reference": 0.28616087877290936,
+          "ranked_indices": [
+            0,
+            4,
+            2,
+            1,
+            3
+          ],
+          "ranked_relevances": [
+            0.1613862804230537,
+            0.16136886276134343,
+            0.10136438990228835,
+            0.0,
+            0.052018224149760095
+          ],
+          "ranked_feature_distances": [
+            2.7017558781649904,
+            2.7018119925223054,
+            2.8951279775564243,
+            3.2216929142632433,
+            3.054106170107404
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 7,
+          "timestamp": "2023-10-16T11:26:31+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.3271955115975422,
+          "top1_feature_distance": 3.054106170107404,
+          "oracle_feature_distance": 2.7017558781649904,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.8541666666666666,
+          "path_recall": 0.434640522875817,
+          "path_f1": 0.5761225567881669,
+          "path_max_distance_m": 345.0647368568367,
+          "path_ndtw": 0.186054190925363,
+          "path_edit_distance": 268,
+          "path_length_ratio_to_reference": 0.3083931893294769,
+          "ranked_indices": [
+            3,
+            1,
+            2,
+            0,
+            4
+          ],
+          "ranked_relevances": [
+            0.052018224149760095,
+            0.0,
+            0.10136438990228835,
+            0.1613862804230537,
+            0.16136886276134343
+          ],
+          "ranked_feature_distances": [
+            3.054106170107404,
+            3.2216929142632433,
+            2.8951279775564243,
+            2.7017558781649904,
+            2.7018119925223054
+          ],
+          "scores": [
+            5.7003257542982826e-05,
+            0.8487985319628395,
+            0.6277611141190357,
+            1.0,
+            0.0
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 7,
+          "timestamp": "2023-10-16T11:26:31+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.8385304865247626,
+          "top1_feature_distance": 2.7017558781649904,
+          "oracle_feature_distance": 2.7017558781649904,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.2597402597402597,
+          "path_recall": 0.25163398692810457,
+          "path_f1": 0.25562287326749106,
+          "path_max_distance_m": 447.4684496784305,
+          "path_ndtw": 0.029101258077647348,
+          "path_edit_distance": 288,
+          "path_length_ratio_to_reference": 0.28616087877290936,
+          "ranked_indices": [
+            0,
+            4,
+            1,
+            3,
+            2
+          ],
+          "ranked_relevances": [
+            0.1613862804230537,
+            0.16136886276134343,
+            0.0,
+            0.052018224149760095,
+            0.10136438990228835
+          ],
+          "ranked_feature_distances": [
+            2.7017558781649904,
+            2.7018119925223054,
+            3.2216929142632433,
+            3.054106170107404,
+            2.8951279775564243
+          ],
+          "scores": [
+            1.0,
+            0.8442151333870423,
+            0.0,
+            0.3559806571171181,
+            1.0
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 7,
+          "timestamp": "2023-10-16T11:26:31+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.26603097663092695,
+          "top1_feature_distance": 3.2216929142632433,
+          "oracle_feature_distance": 2.7017558781649904,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.2898550724637681,
+          "path_recall": 0.2647058823529412,
+          "path_f1": 0.2767102229054573,
+          "path_max_distance_m": 476.59958171863144,
+          "path_ndtw": 0.021617181940187153,
+          "path_edit_distance": 287,
+          "path_length_ratio_to_reference": 0.292784981472995,
+          "ranked_indices": [
+            1,
+            3,
+            2,
+            0,
+            4
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.052018224149760095,
+            0.10136438990228835,
+            0.1613862804230537,
+            0.16136886276134343
+          ],
+          "ranked_feature_distances": [
+            3.2216929142632433,
+            3.054106170107404,
+            2.8951279775564243,
+            2.7017558781649904,
+            2.7018119925223054
+          ],
+          "scores": [
+            0.2500427524431572,
+            0.8476526823188902,
+            0.4708208355892768,
+            0.8389951642792796,
+            0.25
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 8,
+      "timestamp": "2023-10-16T13:25:18+00:00",
+      "origin": {
+        "lat": 43.6450688,
+        "lon": -79.3823574
+      },
+      "destination": {
+        "lat": 43.6568001,
+        "lon": -79.3852542
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 2,
+      "oracle_feature_distance": 2.368839688386779,
+      "observed_gps_to_route_median_m": 8.031574806582611,
+      "observed_gps_to_route_mean_m": 8.790826689219253,
+      "observed_route_distance_ratio": 2.3720077884226654,
+      "observed_raw_trace_distance_km": 1.888,
+      "observed_reconstructed_coordinate_count": 193,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        2.60284433270062,
+        2.523328775530169,
+        2.368839688386779,
+        2.523182203638849,
+        2.6866023954649365
+      ],
+      "candidate_relevances": [
+        0.031176203410561376,
+        0.060773272669739975,
+        0.11827678990182922,
+        0.06082782926939445,
+        0.0
+      ],
+      "candidate_summaries": [
+        "Walking route of 1.49 km. Top ways: footway, service, pedestrian. 87.6% on footpaths. 0.0% residential streets. 12.4% service roads. 0.0% major roads. Approx 44 intersections and 11 turns. 27.6% near parks, closest park 2m. Safety proxy 60.3/100.",
+        "Walking route of 1.51 km. Top ways: footway, pedestrian, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 39 intersections and 12 turns. 52.2% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 1.51 km. Top ways: footway, pedestrian, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 46 intersections and 12 turns. 37.0% near parks, closest park 2m. Safety proxy 63.7/100.",
+        "Walking route of 1.51 km. Top ways: footway, pedestrian, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 39 intersections and 12 turns. 52.2% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 1.49 km. Top ways: footway, service, pedestrian. 84.7% on footpaths. 0.0% residential streets. 15.3% service roads. 0.0% major roads. Approx 44 intersections and 11 turns. 31.7% near parks, closest park 2m. Safety proxy 59.5/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 8,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_candidate_index": 2,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.4875237885161905,
+          "top1_feature_distance": 2.523328775530169,
+          "oracle_feature_distance": 2.368839688386779,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.20512820512820512,
+          "path_recall": 0.07772020725388601,
+          "path_f1": 0.11272898074213246,
+          "path_max_distance_m": 214.90630395241124,
+          "path_ndtw": 0.056124084191653476,
+          "path_edit_distance": 187,
+          "path_length_ratio_to_reference": 0.33764842799685385,
+          "ranked_indices": [
+            1,
+            4,
+            3,
+            2,
+            0
+          ],
+          "ranked_relevances": [
+            0.060773272669739975,
+            0.0,
+            0.06082782926939445,
+            0.11827678990182922,
+            0.031176203410561376
+          ],
+          "ranked_feature_distances": [
+            2.523328775530169,
+            2.6866023954649365,
+            2.523182203638849,
+            2.368839688386779,
+            2.60284433270062
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 8,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_candidate_index": 2,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.48285857315134406,
+          "top1_feature_distance": 2.60284433270062,
+          "oracle_feature_distance": 2.368839688386779,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.20454545454545456,
+          "path_recall": 0.06735751295336788,
+          "path_f1": 0.10134257254222608,
+          "path_max_distance_m": 255.51234557758147,
+          "path_ndtw": 0.047129152294201775,
+          "path_edit_distance": 188,
+          "path_length_ratio_to_reference": 0.3333580346744837,
+          "ranked_indices": [
+            0,
+            4,
+            2,
+            1,
+            3
+          ],
+          "ranked_relevances": [
+            0.031176203410561376,
+            0.0,
+            0.11827678990182922,
+            0.060773272669739975,
+            0.06082782926939445
+          ],
+          "ranked_feature_distances": [
+            2.60284433270062,
+            2.6866023954649365,
+            2.368839688386779,
+            2.523328775530169,
+            2.523182203638849
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 8,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_candidate_index": 2,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.8462814053009505,
+          "top1_feature_distance": 2.523328775530169,
+          "oracle_feature_distance": 2.368839688386779,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.20512820512820512,
+          "path_recall": 0.07772020725388601,
+          "path_f1": 0.11272898074213246,
+          "path_max_distance_m": 214.90630395241124,
+          "path_ndtw": 0.056124084191653476,
+          "path_edit_distance": 187,
+          "path_length_ratio_to_reference": 0.33764842799685385,
+          "ranked_indices": [
+            1,
+            3,
+            2,
+            0,
+            4
+          ],
+          "ranked_relevances": [
+            0.060773272669739975,
+            0.06082782926939445,
+            0.11827678990182922,
+            0.031176203410561376,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            2.523328775530169,
+            2.523182203638849,
+            2.368839688386779,
+            2.60284433270062,
+            2.6866023954649365
+          ],
+          "scores": [
+            0.0889387515550396,
+            1.0,
+            0.49050770728832893,
+            0.9979588897179046,
+            0.0
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 8,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_candidate_index": 2,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.9999618101777933,
+          "top1_feature_distance": 2.368839688386779,
+          "oracle_feature_distance": 2.368839688386779,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.1956521739130435,
+          "path_recall": 0.07772020725388601,
+          "path_f1": 0.11124845488257107,
+          "path_max_distance_m": 246.94551850640968,
+          "path_ndtw": 0.049592950285630655,
+          "path_edit_distance": 188,
+          "path_length_ratio_to_reference": 0.33652844583862024,
+          "ranked_indices": [
+            2,
+            1,
+            3,
+            0,
+            4
+          ],
+          "ranked_relevances": [
+            0.11827678990182922,
+            0.060773272669739975,
+            0.06082782926939445,
+            0.031176203410561376,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            2.368839688386779,
+            2.523328775530169,
+            2.523182203638849,
+            2.60284433270062,
+            2.6866023954649365
+          ],
+          "scores": [
+            0.275320364730177,
+            0.6544681332566407,
+            1.0,
+            0.6544681332566407,
+            0.0
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 8,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_candidate_index": 2,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.8462814053009505,
+          "top1_feature_distance": 2.523328775530169,
+          "oracle_feature_distance": 2.368839688386779,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 0.20512820512820512,
+          "path_recall": 0.07772020725388601,
+          "path_f1": 0.11272898074213246,
+          "path_max_distance_m": 214.90630395241124,
+          "path_ndtw": 0.056124084191653476,
+          "path_edit_distance": 187,
+          "path_length_ratio_to_reference": 0.33764842799685385,
+          "ranked_indices": [
+            1,
+            3,
+            2,
+            0,
+            4
+          ],
+          "ranked_relevances": [
+            0.060773272669739975,
+            0.06082782926939445,
+            0.11827678990182922,
+            0.031176203410561376,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            2.523328775530169,
+            2.523182203638849,
+            2.368839688386779,
+            2.60284433270062,
+            2.6866023954649365
+          ],
+          "scores": [
+            0.13553415484882395,
+            0.9136170333141602,
+            0.6178807804662467,
+            0.9120862006025887,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 9,
+      "timestamp": "2023-10-16T23:47:31+00:00",
+      "origin": {
+        "lat": 43.6529376,
+        "lon": -79.387819
+      },
+      "destination": {
+        "lat": 43.6450038,
+        "lon": -79.3825384
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 4,
+      "oracle_feature_distance": 1.8785076226224722,
+      "observed_gps_to_route_median_m": 9.210935074123109,
+      "observed_gps_to_route_mean_m": 8.559364044553918,
+      "observed_route_distance_ratio": 2.3472613577645207,
+      "observed_raw_trace_distance_km": 1.06,
+      "observed_reconstructed_coordinate_count": 116,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        1.987868244587452,
+        1.969285370266784,
+        1.8924259584200218,
+        2.577896456078053,
+        1.8785076226224722
+      ],
+      "candidate_relevances": [
+        0.22887971706522892,
+        0.23608825885008378,
+        0.26590303735507237,
+        0.0,
+        0.27130214318988344
+      ],
+      "candidate_summaries": [
+        "Walking route of 1.02 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 27 intersections and 1 turns. 53.0% near parks, closest park 1m. Safety proxy 63.0/100.",
+        "Walking route of 1.02 km. Top ways: footway, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 28 intersections and 1 turns. 50.7% near parks, closest park 1m. Safety proxy 62.9/100.",
+        "Walking route of 1.03 km. Top ways: footway, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 30 intersections and 4 turns. 53.6% near parks, closest park 0m. Safety proxy 62.6/100.",
+        "Walking route of 1.05 km. Top ways: footway, service. 97.9% on footpaths. 0.0% residential streets. 2.1% service roads. 0.0% major roads. Approx 30 intersections and 4 turns. 62.6% near parks, closest park 2m. Safety proxy 64.4/100.",
+        "Walking route of 1.03 km. Top ways: footway, steps. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 31 intersections and 4 turns. 52.4% near parks, closest park 0m. Safety proxy 62.7/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 9,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.5108595199734484,
+          "top1_feature_distance": 2.577896456078053,
+          "oracle_feature_distance": 1.8785076226224722,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.6637931034482759,
+          "path_f1": 0.7979274611398964,
+          "path_max_distance_m": 83.33094320174558,
+          "path_ndtw": 0.5072132725462127,
+          "path_edit_distance": 94,
+          "path_length_ratio_to_reference": 0.42128192893758193,
+          "ranked_indices": [
+            3,
+            1,
+            4,
+            0,
+            2
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.23608825885008378,
+            0.27130214318988344,
+            0.22887971706522892,
+            0.26590303735507237
+          ],
+          "ranked_feature_distances": [
+            2.577896456078053,
+            1.969285370266784,
+            1.8785076226224722,
+            1.987868244587452,
+            1.8924259584200218
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 9,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.9168461034822244,
+          "top1_feature_distance": 1.987868244587452,
+          "oracle_feature_distance": 1.8785076226224722,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7413793103448276,
+          "path_f1": 0.8514851485148515,
+          "path_max_distance_m": 83.33094320174558,
+          "path_ndtw": 0.5711400245796189,
+          "path_edit_distance": 89,
+          "path_length_ratio_to_reference": 0.4085331797780241,
+          "ranked_indices": [
+            0,
+            1,
+            2,
+            4,
+            3
+          ],
+          "ranked_relevances": [
+            0.22887971706522892,
+            0.23608825885008378,
+            0.26590303735507237,
+            0.27130214318988344,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            1.987868244587452,
+            1.969285370266784,
+            1.8924259584200218,
+            1.8785076226224722,
+            2.577896456078053
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 9,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.6782021311269874,
+          "top1_feature_distance": 1.987868244587452,
+          "oracle_feature_distance": 1.8785076226224722,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7413793103448276,
+          "path_f1": 0.8514851485148515,
+          "path_max_distance_m": 83.33094320174558,
+          "path_ndtw": 0.5711400245796189,
+          "path_edit_distance": 89,
+          "path_length_ratio_to_reference": 0.4085331797780241,
+          "ranked_indices": [
+            0,
+            1,
+            3,
+            2,
+            4
+          ],
+          "ranked_relevances": [
+            0.22887971706522892,
+            0.23608825885008378,
+            0.0,
+            0.26590303735507237,
+            0.27130214318988344
+          ],
+          "ranked_feature_distances": [
+            1.987868244587452,
+            1.969285370266784,
+            2.577896456078053,
+            1.8924259584200218,
+            1.8785076226224722
+          ],
+          "scores": [
+            1.0,
+            0.6579599159712612,
+            0.017088709699639836,
+            0.6562630779721086,
+            0.0
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 9,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.649476172057051,
+          "top1_feature_distance": 1.987868244587452,
+          "oracle_feature_distance": 1.8785076226224722,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7413793103448276,
+          "path_f1": 0.8514851485148515,
+          "path_max_distance_m": 83.33094320174558,
+          "path_ndtw": 0.5711400245796189,
+          "path_edit_distance": 89,
+          "path_length_ratio_to_reference": 0.4085331797780241,
+          "ranked_indices": [
+            0,
+            3,
+            2,
+            1,
+            4
+          ],
+          "ranked_relevances": [
+            0.22887971706522892,
+            0.0,
+            0.26590303735507237,
+            0.23608825885008378,
+            0.27130214318988344
+          ],
+          "ranked_feature_distances": [
+            1.987868244587452,
+            2.577896456078053,
+            1.8924259584200218,
+            1.969285370266784,
+            1.8785076226224722
+          ],
+          "scores": [
+            1.0,
+            0.44490325943366554,
+            0.47949711081355534,
+            0.8618762188053236,
+            0.0
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 9,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_candidate_index": 4,
+          "oracle_rank": 5,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.2,
+          "ndcg_at_3": 0.6227178572664573,
+          "top1_feature_distance": 1.987868244587452,
+          "oracle_feature_distance": 1.8785076226224722,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.7413793103448276,
+          "path_f1": 0.8514851485148515,
+          "path_max_distance_m": 83.33094320174558,
+          "path_ndtw": 0.5711400245796189,
+          "path_edit_distance": 89,
+          "path_length_ratio_to_reference": 0.4085331797780241,
+          "ranked_indices": [
+            0,
+            3,
+            1,
+            2,
+            4
+          ],
+          "ranked_relevances": [
+            0.22887971706522892,
+            0.0,
+            0.23608825885008378,
+            0.26590303735507237,
+            0.27130214318988344
+          ],
+          "ranked_feature_distances": [
+            1.987868244587452,
+            2.577896456078053,
+            1.969285370266784,
+            1.8924259584200218,
+            1.8785076226224722
+          ],
+          "scores": [
+            1.0,
+            0.6046957518368623,
+            0.13269080997811872,
+            0.7076663631804123,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 10,
+      "timestamp": "2026-02-14T14:07:23+00:00",
+      "origin": {
+        "lat": 43.6453411,
+        "lon": -79.4034294
+      },
+      "destination": {
+        "lat": 43.6484807,
+        "lon": -79.4045162
+      },
+      "candidate_count": 5,
+      "oracle_candidate_index": 0,
+      "oracle_feature_distance": 1.8270081300912608,
+      "observed_gps_to_route_median_m": 2.453926610858876,
+      "observed_gps_to_route_mean_m": 8.717200317117786,
+      "observed_route_distance_ratio": 1.034606993632891,
+      "observed_raw_trace_distance_km": 1.138,
+      "observed_reconstructed_coordinate_count": 47,
+      "path_reference_type": "heldout_reconstructed_route",
+      "candidate_distances_to_observed": [
+        1.8270081300912608,
+        1.9178576768010405,
+        2.0652669466218025,
+        1.9719602085821164,
+        2.031216101842402
+      ],
+      "candidate_relevances": [
+        0.11536465875283886,
+        0.07137540745610749,
+        0.0,
+        0.045179020655082724,
+        0.016487381854001004
+      ],
+      "candidate_summaries": [
+        "Walking route of 0.36 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 16 intersections and 2 turns. 31.9% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 0.36 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 14 intersections and 2 turns. 31.7% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 0.36 km. Top ways: footway, service. 93.2% on footpaths. 0.0% residential streets. 6.8% service roads. 0.0% major roads. Approx 14 intersections and 2 turns. 31.7% near parks, closest park 2m. Safety proxy 63.2/100.",
+        "Walking route of 0.36 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 14 intersections and 2 turns. 31.6% near parks, closest park 2m. Safety proxy 65.0/100.",
+        "Walking route of 0.36 km. Top ways: footway. 100.0% on footpaths. 0.0% residential streets. 0.0% service roads. 0.0% major roads. Approx 15 intersections and 2 turns. 31.5% near parks, closest park 2m. Safety proxy 65.0/100."
+      ],
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 10,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.8610583979643252,
+          "top1_feature_distance": 1.9178576768010405,
+          "oracle_feature_distance": 1.8270081300912608,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.574468085106383,
+          "path_f1": 0.7297297297297298,
+          "path_max_distance_m": 210.02984706881878,
+          "path_ndtw": 0.19962203109857538,
+          "path_edit_distance": 39,
+          "path_length_ratio_to_reference": 0.30390410337904517,
+          "ranked_indices": [
+            1,
+            3,
+            0,
+            2,
+            4
+          ],
+          "ranked_relevances": [
+            0.07137540745610749,
+            0.045179020655082724,
+            0.11536465875283886,
+            0.0,
+            0.016487381854001004
+          ],
+          "ranked_feature_distances": [
+            1.9178576768010405,
+            1.9719602085821164,
+            1.8270081300912608,
+            2.0652669466218025,
+            2.031216101842402
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 10,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.8254812182057302,
+          "top1_feature_distance": 1.8270081300912608,
+          "oracle_feature_distance": 1.8270081300912608,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.574468085106383,
+          "path_f1": 0.7297297297297298,
+          "path_max_distance_m": 228.64005284493896,
+          "path_ndtw": 0.21812819207342177,
+          "path_edit_distance": 32,
+          "path_length_ratio_to_reference": 0.3018994618627882,
+          "ranked_indices": [
+            0,
+            2,
+            1,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.11536465875283886,
+            0.0,
+            0.07137540745610749,
+            0.045179020655082724,
+            0.016487381854001004
+          ],
+          "ranked_feature_distances": [
+            1.8270081300912608,
+            2.0652669466218025,
+            1.9178576768010405,
+            1.9719602085821164,
+            2.031216101842402
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 10,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 1.0,
+          "top1_feature_distance": 1.8270081300912608,
+          "oracle_feature_distance": 1.8270081300912608,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.574468085106383,
+          "path_f1": 0.7297297297297298,
+          "path_max_distance_m": 228.64005284493896,
+          "path_ndtw": 0.21812819207342177,
+          "path_edit_distance": 32,
+          "path_length_ratio_to_reference": 0.3018994618627882,
+          "ranked_indices": [
+            0,
+            1,
+            3,
+            4,
+            2
+          ],
+          "ranked_relevances": [
+            0.11536465875283886,
+            0.07137540745610749,
+            0.045179020655082724,
+            0.016487381854001004,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            1.8270081300912608,
+            1.9178576768010405,
+            1.9719602085821164,
+            2.031216101842402,
+            2.0652669466218025
+          ],
+          "scores": [
+            1.0,
+            0.840594476200552,
+            0.0,
+            0.7333641373150694,
+            0.5163624492307539
+          ]
+        },
+        "prompt_sbert": {
+          "method": "prompt_sbert",
+          "user_id": "osm_trace_toronto",
+          "test_index": 10,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.4987736043556313,
+          "top1_feature_distance": 1.9719602085821164,
+          "oracle_feature_distance": 1.8270081300912608,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.574468085106383,
+          "path_f1": 0.7297297297297298,
+          "path_max_distance_m": 210.96626608343715,
+          "path_ndtw": 0.20545245143232727,
+          "path_edit_distance": 36,
+          "path_length_ratio_to_reference": 0.3045001563263261,
+          "ranked_indices": [
+            3,
+            4,
+            1,
+            0,
+            2
+          ],
+          "ranked_relevances": [
+            0.045179020655082724,
+            0.016487381854001004,
+            0.07137540745610749,
+            0.11536465875283886,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            1.9719602085821164,
+            2.031216101842402,
+            1.9178576768010405,
+            1.8270081300912608,
+            2.0652669466218025
+          ],
+          "scores": [
+            0.832085813638239,
+            0.9381151647315377,
+            0.0,
+            1.0,
+            0.9589623554968048
+          ],
+          "preference": "Synthetic preference for evaluation only: prefer routes near parks or green space, pedestrian paths and walk-friendly streets, avoiding major roads.",
+          "preference_source": "synthetic_from_osm_reconstructed_route_features"
+        },
+        "hybrid": {
+          "method": "hybrid",
+          "user_id": "osm_trace_toronto",
+          "test_index": 10,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_candidate_index": 0,
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 1.0,
+          "top1_feature_distance": 1.8270081300912608,
+          "oracle_feature_distance": 1.8270081300912608,
+          "path_reference_type": "heldout_reconstructed_route",
+          "path_precision": 1.0,
+          "path_recall": 0.574468085106383,
+          "path_f1": 0.7297297297297298,
+          "path_max_distance_m": 228.64005284493896,
+          "path_ndtw": 0.21812819207342177,
+          "path_edit_distance": 32,
+          "path_length_ratio_to_reference": 0.3018994618627882,
+          "ranked_indices": [
+            0,
+            1,
+            3,
+            4,
+            2
+          ],
+          "ranked_relevances": [
+            0.11536465875283886,
+            0.07137540745610749,
+            0.045179020655082724,
+            0.016487381854001004,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            1.8270081300912608,
+            1.9178576768010405,
+            1.9719602085821164,
+            2.031216101842402,
+            2.0652669466218025
+          ],
+          "scores": [
+            0.9580214534095597,
+            0.8649746483332984,
+            0.0,
+            0.8000231029863021,
+            0.6270124257972667
+          ]
+        }
+      }
+    }
+  ]
+}

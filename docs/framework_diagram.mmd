@@ -1,0 +1,39 @@
+flowchart LR
+    A["OSM Public GPS Trackpoints"] --> B["Temporal/Spatial Segmentation"]
+    B --> C["Approximate Map Matching"]
+    C --> D["Route Feature Extraction"]
+    D --> E["Dynamic Profile Construction"]
+    E --> F["Candidate Route Generation"]
+    D --> F
+    F --> G["Ranking Modes"]
+    G --> H["Evaluation Metrics"]
+
+    G --> G1["Random"]
+    G --> G2["Shortest Distance"]
+    G --> G3["Profile"]
+    G --> G4["Prompt/SBERT"]
+    G --> G5["Hybrid"]
+
+    H --> H1["Reconstruction Quality"]
+    H --> H2["Ranking Quality"]
+
+    H1 --> H1a["Timestamp Coverage"]
+    H1 --> H1b["Useful Segment Rate"]
+    H1 --> H1c["Map-Match Success"]
+    H1 --> H1d["GPS-to-Route Distance"]
+    H1 --> H1e["Route-Distance Ratio"]
+
+    H2 --> H2a["Hit@1 / Hit@3"]
+    H2 --> H2b["MRR"]
+    H2 --> H2c["NDCG@3"]
+    H2 --> H2d["Mean Feature Distance"]
+
+    classDef source fill:#eef6ff,stroke:#3b6ea8,stroke-width:1px;
+    classDef process fill:#f7f7f7,stroke:#555,stroke-width:1px;
+    classDef rank fill:#fff6e6,stroke:#b7791f,stroke-width:1px;
+    classDef eval fill:#eefaf0,stroke:#2f855a,stroke-width:1px;
+
+    class A source;
+    class B,C,D,E,F process;
+    class G,G1,G2,G3,G4,G5 rank;
+    class H,H1,H2,H1a,H1b,H1c,H1d,H1e,H2a,H2b,H2c,H2d eval;

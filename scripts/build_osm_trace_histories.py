@@ -108,6 +108,10 @@ def safe_max(values: List[float], default: float = 0.0) -> float:
     return float(np.max(values)) if values else default
 
 
+def failed_check_names(checks: Dict[str, bool]) -> List[str]:
+    return [name for name, passed in checks.items() if not passed]
+
+
 # --------------------------------------------------
 # GPX parsing
 # --------------------------------------------------
@@ -473,6 +477,11 @@ def route_line_distance_stats(
         }
 
 
+def segment_to_coordinates(segment: List[Dict[str, Any]]) -> List[List[float]]:
+    """Return raw GPS trace coordinates as [lat, lon] pairs for transparent QA."""
+    return [[float(p["lat"]), float(p["lon"])] for p in segment]
+
+
 # --------------------------------------------------
 # History record building
 # --------------------------------------------------
@@ -520,6 +529,12 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
             "timestamp": segment[0]["timestamp"].isoformat(),
             "mode": "osm_pseudo_trace",
             "source": "osm_public_gps_trackpoints",
+            "preference_text": build_synthetic_preference_text(feat),
+            "preference_source": "synthetic_from_osm_reconstructed_route_features",
+            "preference_note": (
+                "Synthetic text generated from reconstructed OSM pseudo-history features for prompt-baseline "
+                "experiments only. It is not original OSM user-provided preference text."
+            ),
             "origin": {
                 "lat": segment[0]["lat"],
                 "lon": segment[0]["lon"],
@@ -528,6 +543,8 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
                 "lat": segment[-1]["lat"],
                 "lon": segment[-1]["lon"],
             },
+            "raw_gps_trace_coordinates": segment_to_coordinates(segment),
+            "reconstructed_route_coordinates": feat.get("coordinates", []),
             "features": {
                 "distance_km": feat["distance_km"],
                 "major_pct": feat["major_pct"],
@@ -550,6 +567,7 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
                 "route_distance_ratio": route_distance_ratio,
                 "gps_to_route_mean_m": distance_stats["gps_to_route_mean_m"],
                 "gps_to_route_median_m": distance_stats["gps_to_route_median_m"],
+                "coordinates": feat.get("coordinates", []),
             },
         }
 
@@ -567,6 +585,33 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
         base_diag["error"] = repr(e)
         print(f"  Segment {idx}: failed with {repr(e)}")
         return None, base_diag
+
+
+def build_synthetic_preference_text(features: Dict[str, Any]) -> str:
+    """Create clearly labeled synthetic preference text from route features.
+
+    This is useful for exercising prompt/SBERT and hybrid code paths, but it
+    must not be described as original user intent from public OSM traces.
+    """
+    traits = []
+    if features.get("park_near_pct", 0) >= 10:
+        traits.append("routes near parks or green space")
+    if features.get("walk_pct", 0) >= 20:
+        traits.append("pedestrian paths and walk-friendly streets")
+    if features.get("major_pct", 0) <= 20:
+        traits.append("avoiding major roads")
+    if features.get("residential_pct", 0) >= 20:
+        traits.append("quiet residential streets")
+    if features.get("safety_score", 0) >= 50:
+        traits.append("safer-feeling walking routes")
+    if not traits:
+        traits.append("routes similar to prior observed walking behavior")
+
+    return (
+        "Synthetic preference for evaluation only: prefer "
+        + ", ".join(traits[:3])
+        + "."
+    )
 
 
 # --------------------------------------------------
@@ -591,6 +636,46 @@ def build_data_quality_report(
     gps_mean_dists = [d.get("gps_to_route_mean_m") for d in successes]
     gps_median_dists = [d.get("gps_to_route_median_m") for d in successes]
     pair_success_rates = [d.get("pair_success_rate") for d in successes]
+
+    per_segment_diagnostics = []
+    for diag in map_match_diags:
+        route_ratio = diag.get("route_distance_ratio")
+        gps_median = diag.get("gps_to_route_median_m")
+        segment_checks = {
+            "map_match_success": bool(diag.get("map_match_success")),
+            "route_distance_ratio_strict_ok": (
+                route_ratio is not None and np.isfinite(route_ratio) and 0.5 <= route_ratio <= 2.0
+            ),
+            "route_distance_ratio_exploratory_ok": (
+                route_ratio is not None and np.isfinite(route_ratio) and 0.5 <= route_ratio <= 2.5
+            ),
+            "gps_to_route_median_ok": (
+                gps_median is not None and np.isfinite(gps_median) and gps_median <= 100
+            ),
+        }
+        per_segment_diagnostics.append({
+            "segment_index": diag.get("segment_index"),
+            "map_match_success": bool(diag.get("map_match_success")),
+            "raw_trace_distance_km": diag.get("raw_trace_distance_km"),
+            "route_distance_km": diag.get("route_distance_km"),
+            "route_distance_ratio": route_ratio,
+            "gps_to_route_mean_m": diag.get("gps_to_route_mean_m"),
+            "gps_to_route_median_m": gps_median,
+            "duration_min": diag.get("duration_min"),
+            "avg_speed_kmh": diag.get("avg_speed_kmh"),
+            "max_jump_m": diag.get("max_jump_m"),
+            "segment_points": diag.get("segment_points"),
+            "matched_points": diag.get("matched_points"),
+            "unique_matched_nodes": diag.get("unique_matched_nodes"),
+            "matched_point_coverage": diag.get("matched_point_coverage"),
+            "attempted_node_pairs": diag.get("attempted_node_pairs"),
+            "successful_node_pairs": diag.get("successful_node_pairs"),
+            "pair_success_rate": diag.get("pair_success_rate"),
+            "route_nodes": diag.get("route_nodes"),
+            "error": diag.get("error"),
+            "checks": segment_checks,
+            "failed_checks": failed_check_names(segment_checks),
+        })
 
     report = {
         "data_quality": {
@@ -631,15 +716,37 @@ def build_data_quality_report(
         },
 
         "prototype_thresholds": {
-            "timestamp_coverage_min": 0.80,
-            "useful_segments_min": 5,
-            "map_match_success_rate_min": 0.70,
-            "route_distance_ratio_target_range": [0.5, 2.0],
-            "gps_to_route_median_target_m": 100,
+            "strict": {
+                "timestamp_coverage_min": 0.80,
+                "useful_segments_min": 5,
+                "map_match_success_rate_min": 0.70,
+                "route_distance_ratio_target_range": [0.5, 2.0],
+                "gps_to_route_median_target_m": 100,
+            },
+            "exploratory": {
+                "timestamp_coverage_min": 0.80,
+                "useful_segments_min": 5,
+                "map_match_success_rate_min": 0.70,
+                "route_distance_ratio_target_range": [0.5, 2.5],
+                "gps_to_route_median_target_m": 100,
+            },
         },
+        "per_segment_diagnostics": per_segment_diagnostics,
     }
 
-    checks = {
+    strict_checks = {
+        "timestamp_coverage_ok": report["data_quality"]["timestamp_coverage"] >= 0.80,
+        "useful_segments_ok": report["data_quality"]["useful_segments_found"] >= 5,
+        "map_match_success_rate_ok": report["map_matching_quality"]["map_match_success_rate"] >= 0.70,
+        "route_distance_ratio_ok": (
+            0.5 <= report["map_matching_quality"]["median_route_distance_ratio"] <= 2.0
+        ),
+        "gps_to_route_distance_ok": (
+            report["map_matching_quality"]["median_gps_to_route_median_m"] <= 100
+        ),
+    }
+
+    exploratory_checks = {
         "timestamp_coverage_ok": report["data_quality"]["timestamp_coverage"] >= 0.80,
         "useful_segments_ok": report["data_quality"]["useful_segments_found"] >= 5,
         "map_match_success_rate_ok": report["map_matching_quality"]["map_match_success_rate"] >= 0.70,
@@ -651,8 +758,34 @@ def build_data_quality_report(
         ),
     }
 
-    report["checks"] = checks
-    report["overall_prototype_usable"] = all(checks.values())
+    report["checks"] = {
+        "strict": strict_checks,
+        "exploratory": exploratory_checks,
+    }
+    report["failed_checks"] = {
+        "strict": failed_check_names(strict_checks),
+        "exploratory": failed_check_names(exploratory_checks),
+    }
+    report["strict_prototype_usable"] = all(strict_checks.values())
+    report["exploratory_usable"] = all(exploratory_checks.values())
+
+    # Compatibility alias for older notebooks/docs. New writing should prefer
+    # strict_prototype_usable and exploratory_usable.
+    report["overall_prototype_usable"] = report["strict_prototype_usable"]
+    report["interpretation"] = {
+        "strict_prototype_usable": (
+            "True only when the data passes the stated strict reconstruction thresholds, including "
+            "median route-distance ratio within [0.5, 2.0]."
+        ),
+        "exploratory_usable": (
+            "True when the data is good enough for exploratory pseudo-history experiments under a looser "
+            "route-distance ratio ceiling of 2.5. This should not be presented as clean per-user history."
+        ),
+        "route_distance_ratio_note": (
+            "Values above 2.0 suggest approximate map matching may overbuild routes even when GPS-to-route "
+            "distance is low."
+        ),
+    }
 
     return report
 
@@ -880,7 +1013,10 @@ def main():
         "map_match_success_rate": quality_report["map_matching_quality"]["map_match_success_rate"],
         "median_route_distance_ratio": quality_report["map_matching_quality"]["median_route_distance_ratio"],
         "median_gps_to_route_median_m": quality_report["map_matching_quality"]["median_gps_to_route_median_m"],
-        "overall_prototype_usable": quality_report["overall_prototype_usable"],
+        "strict_prototype_usable": quality_report["strict_prototype_usable"],
+        "exploratory_usable": quality_report["exploratory_usable"],
+        "strict_failed_checks": quality_report["failed_checks"]["strict"],
+        "exploratory_failed_checks": quality_report["failed_checks"]["exploratory"],
     }, indent=2))
 
     print("\nProfile Ranking Evaluation Summary:")

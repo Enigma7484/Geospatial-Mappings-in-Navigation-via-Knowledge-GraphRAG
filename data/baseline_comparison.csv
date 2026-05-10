@@ -1,0 +1,6 @@
+method,status,num_queries,hit_at_1,hit_at_3,mrr,ndcg_at_3,mean_feature_distance,skip_reason,description
+random,ran,3,0.3333333333333333,0.3333333333333333,0.5,0.5266323509848442,1.2283145322454907,,Randomly permutes the same candidate pool; deterministic seed for reproducibility.
+shortest_distance,ran,3,1.0,1.0,1.0,1.0,0.0,,Ranks candidates by shortest reconstructed OSM route distance.
+prompt_sbert,skipped,0,,,,,,No preference text found in OSM pseudo-history records.,Ranks route text by semantic similarity to preference text using SBERT.
+profile,ran,3,0.6666666666666666,1.0,0.7777777777777778,0.9443099607496434,0.24712230735851337,,Builds a dynamic profile from earlier records and scores candidates with profile weights.
+hybrid,skipped,0,,,,,,No prompt/SBERT scores available because preference text is missing or SBERT failed.,Combines profile and prompt/SBERT scores using the backend's 0.75/0.25 weighting.

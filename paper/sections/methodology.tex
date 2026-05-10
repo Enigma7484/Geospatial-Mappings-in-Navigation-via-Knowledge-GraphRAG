@@ -1,0 +1,28 @@
+The prototype contains three main stages: trace processing, route feature extraction, and route ranking.
+
+\subsection{OSM Trace Processing}
+The pipeline probes OSM public GPS trackpoints in a Toronto bounding box, parses GPX files, and builds temporal/spatial pseudo-segments. Segments split when timestamp gaps or spatial jumps exceed configured thresholds. Useful segments are retained when they have sufficient distance and plausible speed. These segments are explicitly treated as OSM-derived historical movement signals, not clean per-user histories.
+
+\subsection{Approximate Map Matching}
+For each useful pseudo-segment, the system builds a local OSM walking graph, maps GPS points to nearest graph nodes, deduplicates consecutive repeated nodes, and connects successive matched nodes with shortest paths. This approximate map matching is intentionally simple and therefore reported with diagnostics: matched-point coverage, pair success rate, GPS-to-route distance, and route-distance ratio.
+
+\subsection{Route Feature Extraction}
+For both reconstructed pseudo-history routes and generated candidate routes, the system extracts OSM-derived features: route distance, major-road percentage, walking-way percentage, residential percentage, service-road percentage, intersections, turns, park proximity, lighting percentage, traffic signals, crossings, tunnel length, and an OSM-only safety proxy. The safety proxy is not a crime model; it is a route-attribute score based on available OSM tags.
+
+\subsection{Dynamic Profile Construction}
+Given a request timestamp, the profile module computes temporal context: weekday/weekend, time bucket, season, and rush-hour status. It selects history records with similar context, averages route features, and converts those averages into feature weights. Context rules then adjust weights for rush hour, evening/night, weekend, summer, and winter.
+
+\subsection{Ranking Modes}
+The prototype supports five evaluation methods:
+
+\begin{itemize}
+  \item \textbf{Random:} random permutation of generated route candidates.
+  \item \textbf{Shortest-distance:} candidates sorted by OSM route length.
+  \item \textbf{Profile:} candidates scored using dynamic profile weights.
+  \item \textbf{Prompt/SBERT:} route summaries ranked by semantic similarity to preference text.
+  \item \textbf{Hybrid:} $0.75$ profile score plus $0.25$ prompt/SBERT score, matching the backend.
+\end{itemize}
+
+Prompt/SBERT and hybrid modes are skipped when no preference text exists. This is the current case for the OSM pseudo-history records.
+
+\textbf{TODO:} Add equations for profile scoring after stabilizing the final feature weights.

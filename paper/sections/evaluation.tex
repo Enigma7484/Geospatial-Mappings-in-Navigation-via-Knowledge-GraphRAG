@@ -1,0 +1,22 @@
+The evaluation currently has two layers: reconstruction quality and route-candidate ranking quality.
+
+\subsection{Reconstruction Quality}
+The trace pipeline reports timestamp coverage, pseudo-segments found, useful segment rate, map-match success rate, GPS-to-route distance, and route-distance ratio. Strict usability requires timestamp coverage at least $0.80$, at least five useful segments, map-match success rate at least $0.70$, median GPS-to-route distance at most $100$ meters, and median route-distance ratio in $[0.5, 2.0]$. Exploratory usability relaxes only the route-distance ratio ceiling to $2.5$.
+
+\subsection{Route-Candidate Baselines}
+The corrected Phase 3 evaluation uses generated route candidates. For each held-out pseudo-history record, the evaluator:
+
+\begin{enumerate}
+  \item Uses the held-out origin and destination.
+  \item Generates up to $k=5$ OSM walking-route candidates.
+  \item Treats the held-out reconstructed route features as the observed reference.
+  \item Selects the oracle candidate by minimum normalized feature distance to the observed reference.
+  \item Ranks candidates using each available baseline.
+\end{enumerate}
+
+This replaces a weaker sanity check in which the held-out history record was ranked against previous history records. That older setup made shortest-distance look artificially strong because the held-out pseudo-route could be the shortest candidate by construction.
+
+\subsection{Metrics}
+Ranking quality is measured with Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. Hit@K and MRR evaluate oracle recovery. NDCG@3 uses graded feature-similarity relevance. Mean feature distance measures how close the top-ranked candidate is to the observed pseudo-route in normalized feature space.
+
+\textbf{TODO:} Increase the number of queries and add confidence intervals or bootstrap intervals after collecting more trace-derived records.

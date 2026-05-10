@@ -1,0 +1,438 @@
+{
+  "metadata": {
+    "history_path": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\user_histories_osm_trace.json",
+    "json_output_path": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\baseline_comparison.json",
+    "csv_output_path": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\baseline_comparison.csv",
+    "feature_names": [
+      "distance_km",
+      "major_pct",
+      "walk_pct",
+      "residential_pct",
+      "service_pct",
+      "intersections",
+      "turns",
+      "park_near_pct",
+      "safety_score",
+      "lit_pct",
+      "signal_cnt",
+      "crossing_cnt",
+      "tunnel_m"
+    ],
+    "evaluation_setup": "Leave-one-out over OSM pseudo-history records. Earlier records form profile history; candidate 0 is the held-out observed/pseudo-route and candidates 1..k are recent previous routes.",
+    "oracle_definition": "The held-out record, inserted as candidate index 0.",
+    "note": "These are preliminary pseudo-history ranking baselines. They do not establish final route-choice performance against independently observed user decisions."
+  },
+  "summary": [
+    {
+      "method": "random",
+      "status": "ran",
+      "num_queries": 3,
+      "hit_at_1": 0.3333333333333333,
+      "hit_at_3": 0.3333333333333333,
+      "mrr": 0.5,
+      "ndcg_at_3": 0.5266323509848442,
+      "mean_feature_distance": 1.2283145322454907,
+      "skip_reason": "",
+      "description": "Randomly permutes the same candidate pool; deterministic seed for reproducibility."
+    },
+    {
+      "method": "shortest_distance",
+      "status": "ran",
+      "num_queries": 3,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_3": 1.0,
+      "mean_feature_distance": 0.0,
+      "skip_reason": "",
+      "description": "Ranks candidates by shortest reconstructed OSM route distance."
+    },
+    {
+      "method": "prompt_sbert",
+      "status": "skipped",
+      "num_queries": 0,
+      "hit_at_1": null,
+      "hit_at_3": null,
+      "mrr": null,
+      "ndcg_at_3": null,
+      "mean_feature_distance": null,
+      "skip_reason": "No preference text found in OSM pseudo-history records.",
+      "description": "Ranks route text by semantic similarity to preference text using SBERT."
+    },
+    {
+      "method": "profile",
+      "status": "ran",
+      "num_queries": 3,
+      "hit_at_1": 0.6666666666666666,
+      "hit_at_3": 1.0,
+      "mrr": 0.7777777777777778,
+      "ndcg_at_3": 0.9443099607496434,
+      "mean_feature_distance": 0.24712230735851337,
+      "skip_reason": "",
+      "description": "Builds a dynamic profile from earlier records and scores candidates with profile weights."
+    },
+    {
+      "method": "hybrid",
+      "status": "skipped",
+      "num_queries": 0,
+      "hit_at_1": null,
+      "hit_at_3": null,
+      "mrr": null,
+      "ndcg_at_3": null,
+      "mean_feature_distance": null,
+      "skip_reason": "No prompt/SBERT scores available because preference text is missing or SBERT failed.",
+      "description": "Combines profile and prompt/SBERT scores using the backend's 0.75/0.25 weighting."
+    }
+  ],
+  "skipped": {
+    "prompt_sbert": "No preference text found in OSM pseudo-history records.",
+    "hybrid": "No prompt/SBERT scores available because preference text is missing or SBERT failed."
+  },
+  "per_query_results": [
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 3,
+      "timestamp": "2023-10-16T13:25:18+00:00",
+      "candidate_count": 4,
+      "oracle_candidate_index": 0,
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.8847111069918755,
+          "top1_feature_distance": 0.0,
+          "ranked_indices": [
+            0,
+            2,
+            1,
+            3
+          ],
+          "ranked_relevances": [
+            1.0,
+            0.07193984841205747,
+            0.0,
+            0.2308439114603179
+          ],
+          "ranked_feature_distances": [
+            0.0,
+            2.6315184210307367,
+            2.835504160509552,
+            2.180945289135522
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 1.0,
+          "top1_feature_distance": 0.0,
+          "ranked_indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "ranked_relevances": [
+            1.0,
+            0.2308439114603179,
+            0.07193984841205747,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            0.0,
+            2.180945289135522,
+            2.6315184210307367,
+            2.835504160509552
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 3,
+          "timestamp": "2023-10-16T13:25:18+00:00",
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.9695587080580929,
+          "top1_feature_distance": 0.0,
+          "ranked_indices": [
+            0,
+            3,
+            1,
+            2
+          ],
+          "ranked_relevances": [
+            1.0,
+            0.2308439114603179,
+            0.0,
+            0.07193984841205747
+          ],
+          "ranked_feature_distances": [
+            0.0,
+            2.180945289135522,
+            2.835504160509552,
+            2.6315184210307367
+          ],
+          "scores": [
+            1.0,
+            0.0017605794256940145,
+            0.0,
+            0.0029921673758607566
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 4,
+      "timestamp": "2023-10-16T23:47:31+00:00",
+      "candidate_count": 5,
+      "oracle_candidate_index": 0,
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.4121983373786491,
+          "top1_feature_distance": 1.1904719135841972,
+          "ranked_indices": [
+            4,
+            1,
+            2,
+            0,
+            3
+          ],
+          "ranked_relevances": [
+            0.5586850633497903,
+            0.0,
+            0.04730448016096578,
+            1.0,
+            0.12053784580208637
+          ],
+          "ranked_feature_distances": [
+            1.1904719135841972,
+            2.6975563587773514,
+            2.569949857520481,
+            0.0,
+            2.3723987263606094
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 1.0,
+          "top1_feature_distance": 0.0,
+          "ranked_indices": [
+            0,
+            4,
+            3,
+            2,
+            1
+          ],
+          "ranked_relevances": [
+            1.0,
+            0.5586850633497903,
+            0.12053784580208637,
+            0.04730448016096578,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            0.0,
+            1.1904719135841972,
+            2.3723987263606094,
+            2.569949857520481,
+            2.6975563587773514
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 4,
+          "timestamp": "2023-10-16T23:47:31+00:00",
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 0.9740814546997958,
+          "top1_feature_distance": 0.0,
+          "ranked_indices": [
+            0,
+            4,
+            2,
+            3,
+            1
+          ],
+          "ranked_relevances": [
+            1.0,
+            0.5586850633497903,
+            0.04730448016096578,
+            0.12053784580208637,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            0.0,
+            1.1904719135841972,
+            2.569949857520481,
+            2.3723987263606094,
+            2.6975563587773514
+          ],
+          "scores": [
+            1.0,
+            0.0,
+            0.050274101913779526,
+            0.015899375154749193,
+            0.8837764936465623
+          ]
+        }
+      }
+    },
+    {
+      "user_id": "osm_trace_toronto",
+      "test_index": 5,
+      "timestamp": "2026-02-14T14:07:23+00:00",
+      "candidate_count": 6,
+      "oracle_candidate_index": 0,
+      "methods": {
+        "random": {
+          "method": "random",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_rank": 4,
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "reciprocal_rank": 0.25,
+          "ndcg_at_3": 0.282987608584008,
+          "top1_feature_distance": 2.4944716831522746,
+          "ranked_indices": [
+            1,
+            5,
+            2,
+            0,
+            3,
+            4
+          ],
+          "ranked_relevances": [
+            0.0,
+            0.7027960160531181,
+            0.05287887326322971,
+            1.0,
+            0.11913998708806106,
+            0.43384103310931366
+          ],
+          "ranked_feature_distances": [
+            2.4944716831522746,
+            0.7413669220755401,
+            2.36256683116015,
+            0.0,
+            2.1972803590299788,
+            1.4122675110715632
+          ]
+        },
+        "shortest_distance": {
+          "method": "shortest_distance",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_rank": 1,
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "reciprocal_rank": 1.0,
+          "ndcg_at_3": 1.0,
+          "top1_feature_distance": 0.0,
+          "ranked_indices": [
+            0,
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "ranked_relevances": [
+            1.0,
+            0.7027960160531181,
+            0.43384103310931366,
+            0.11913998708806106,
+            0.05287887326322971,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            0.0,
+            0.7413669220755401,
+            1.4122675110715632,
+            2.1972803590299788,
+            2.36256683116015,
+            2.4944716831522746
+          ]
+        },
+        "profile": {
+          "method": "profile",
+          "user_id": "osm_trace_toronto",
+          "test_index": 5,
+          "timestamp": "2026-02-14T14:07:23+00:00",
+          "oracle_rank": 3,
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "ndcg_at_3": 0.8892897194910414,
+          "top1_feature_distance": 0.7413669220755401,
+          "ranked_indices": [
+            5,
+            4,
+            0,
+            3,
+            2,
+            1
+          ],
+          "ranked_relevances": [
+            0.7027960160531181,
+            0.43384103310931366,
+            1.0,
+            0.11913998708806106,
+            0.05287887326322971,
+            0.0
+          ],
+          "ranked_feature_distances": [
+            0.7413669220755401,
+            1.4122675110715632,
+            0.0,
+            2.1972803590299788,
+            2.36256683116015,
+            2.4944716831522746
+          ],
+          "scores": [
+            0.8848589524348517,
+            0.0,
+            0.06884751972919056,
+            0.07382777150517421,
+            0.9149792003357444,
+            1.0
+          ]
+        }
+      }
+    }
+  ]
+}
