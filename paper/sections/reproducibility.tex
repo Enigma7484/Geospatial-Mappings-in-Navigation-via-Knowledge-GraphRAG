@@ -1,0 +1,13 @@
+The implementation is organized as a FastAPI backend and React frontend. The backend exposes route ranking through the same workflow used by the evaluation scripts: graph construction, route generation, feature extraction, profile construction, ranking, and result serialization. The OSM pseudo-history files, quality reports, baseline outputs, and Porto benchmark outputs are written under the project data directory. The public Porto CSV is intentionally not committed because of its size; the evaluator writes a placeholder report if the dataset is missing.
+
+The main OSM route-candidate evaluation can be reproduced with the route-candidate baseline script. The public Porto benchmark can be reproduced after placing the Porto training CSV at \texttt{data/porto/train.csv}. The 50-query run reported in this paper uses:
+
+\begin{verbatim}
+python scripts\evaluate_porto_candidate_baselines.py
+  --max-tests 50 --max-rows-to-scan 12000
+  --sample-stride 50 --k-routes 8
+  --dist-meters 2500 --bootstrap-samples 1000
+  --min-anchor-spacing-m 80 --max-anchors 60
+\end{verbatim}
+
+The script outputs both JSON and CSV summaries, including skipped-baseline reasons. Prompt/SBERT and hybrid are skipped for Porto because the public trajectories do not contain natural-language preferences. This behavior is deliberate: missing data should produce a reported skip, not fabricated preference labels.

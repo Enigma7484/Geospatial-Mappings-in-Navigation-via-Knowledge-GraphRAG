@@ -5,3 +5,5 @@ __pycache__/
 cache/
 .vscode/
 /geolife_raw/
+/data/porto/
+*.zip

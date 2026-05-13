@@ -2,39 +2,77 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{dai2015bigtrajectory,nasr2019,userhabits2024}
+\citation{nasr2019}
+\@writefile{toc}{\contentsline {section}{Abstract}{1}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\citation{dai2015bigtrajectory}
 \citation{userhabits2024}
 \citation{nasr2019}
 \citation{chen2012popular}
 \citation{tian2023drpk}
-\@writefile{toc}{\contentsline {section}{Abstract}{1}{section*.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{1}{section.2}\protected@file@percent }
+\citation{contexttrails2025}
 \citation{wang2025pts}
+\citation{userhabits2024}
+\citation{nasr2019}
+\citation{dai2015bigtrajectory}
+\citation{chen2012popular}
+\citation{tian2023drpk}
+\citation{contexttrails2025,wang2025pts}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Personalized Route Recommendation}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Trajectory Reconstruction and Historical Route Planning}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Contextual and Preference-Aware Recommendation}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Positioning}{2}{subsection.2.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Problem Statement}{2}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{2}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}OSM Trace Processing}{2}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Approximate Map Matching}{2}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Route Feature Extraction}{2}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Dynamic Profile Construction}{2}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Ranking Modes}{2}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Evaluation}{2}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Reconstruction Quality}{3}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Route-Candidate Baselines}{3}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Metrics}{3}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Results}{3}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Trace Reconstruction}{3}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Route-Candidate Ranking}{3}{subsection.6.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Current route-candidate baseline results. These are preliminary and use only three held-out pseudo-history queries.}}{3}{table.caption.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Evaluation Assumptions}{2}{subsection.3.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Baseline alignment. The table separates conceptual relevance from direct comparability so that the evaluation does not force an invalid comparison.}}{3}{table.caption.5}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{tab:route_candidate_results}{{1}{3}{Current route-candidate baseline results. These are preliminary and use only three held-out pseudo-history queries}{table.caption.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7}Discussion}{3}{section.7}\protected@file@percent }
+\newlabel{tab:baseline_alignment}{{1}{3}{Baseline alignment. The table separates conceptual relevance from direct comparability so that the evaluation does not force an invalid comparison}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Baseline Objective}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{3}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}OSM Trace Processing}{3}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Approximate Map Matching}{3}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Route Feature Extraction}{3}{subsection.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces End-to-end framework. Public movement signals are converted into reconstructed route references and pseudo-history profiles. For a new origin-destination query, the system generates OSM candidates and ranks them with baseline, profile, prompt, or hybrid methods.}}{4}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:pipeline}{{1}{4}{End-to-end framework. Public movement signals are converted into reconstructed route references and pseudo-history profiles. For a new origin-destination query, the system generates OSM candidates and ranks them with baseline, profile, prompt, or hybrid methods}{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Dynamic Profile Construction}{4}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Candidate Generation}{4}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Ranking Modes}{4}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Scoring}{4}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Evaluation}{4}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Reconstruction Quality}{4}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Threshold Sensitivity}{4}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Route-Candidate Baselines}{4}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Baselines}{5}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Metrics}{5}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}External Benchmark Goal}{5}{subsection.5.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results}{5}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Trace Reconstruction}{5}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Threshold Sensitivity}{5}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Route-Candidate Ranking}{5}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Path-Similarity Metrics}{5}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Porto Public-Dataset Prototype}{5}{subsection.6.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Threshold sensitivity over OSM-derived pseudo-history reconstruction. All configurations remain exploratory-usable but fail strict usability due to route-distance ratio.}}{6}{table.caption.7}\protected@file@percent }
+\newlabel{tab:threshold_sensitivity}{{2}{6}{Threshold sensitivity over OSM-derived pseudo-history reconstruction. All configurations remain exploratory-usable but fail strict usability due to route-distance ratio}{table.caption.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Current route-candidate baseline results over eight held-out OSM pseudo-history queries. Prompt/SBERT and hybrid use synthetic preference text and should be interpreted as ablations.}}{6}{table.caption.8}\protected@file@percent }
+\newlabel{tab:route_candidate_results}{{3}{6}{Current route-candidate baseline results over eight held-out OSM pseudo-history queries. Prompt/SBERT and hybrid use synthetic preference text and should be interpreted as ablations}{table.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Result Summary}{6}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Discussion}{6}{section.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Prototype Porto public-dataset route-candidate results over 50 sampled queries. Values in parentheses are 95\% bootstrap confidence intervals. This is a scaled engineering milestone, not a final external-baseline result.}}{7}{table.caption.9}\protected@file@percent }
+\newlabel{tab:porto_results}{{4}{7}{Prototype Porto public-dataset route-candidate results over 50 sampled queries. Values in parentheses are 95\% bootstrap confidence intervals. This is a scaled engineering milestone, not a final external-baseline result}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Threats to Validity}{7}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Path to a Stronger Claim}{7}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Reproducibility}{7}{section.8}\protected@file@percent }
 \bibstyle{ACM-Reference-Format}
 \bibdata{references}
 \bibcite{chen2012popular}{{1}{2012}{{Chen et~al\mbox  {.}}}{{}}}
-\bibcite{tian2023drpk}{{2}{2023}{{Tian et~al\mbox  {.}}}{{}}}
-\bibcite{nasr2019}{{3}{2019}{{TODO}}{{}}}
-\bibcite{userhabits2024}{{4}{2024}{{TODO}}{{}}}
-\bibcite{wang2025pts}{{5}{2025}{{TODO}}{{}}}
+\bibcite{dai2015bigtrajectory}{{2}{2015}{{Dai et~al\mbox  {.}}}{{}}}
+\bibcite{userhabits2024}{{3}{2024}{{Huang et~al\mbox  {.}}}{{}}}
+\bibcite{contexttrails2025}{{4}{2025}{{S{\'a}nchez et~al\mbox  {.}}}{{}}}
+\bibcite{tian2023drpk}{{5}{2023}{{Tian et~al\mbox  {.}}}{{}}}
+\bibcite{nasr2019}{{6}{2019}{{Wang et~al\mbox  {.}}}{{}}}
+\bibcite{wang2025pts}{{7}{2025}{{Wang et~al\mbox  {.}}}{{}}}
 \newlabel{tocindent-1}{0pt}
 \newlabel{tocindent0}{0pt}
 \newlabel{tocindent1}{4.185pt}
@@ -42,7 +80,7 @@
 \newlabel{tocindent3}{0pt}
 \newlabel{tocindent4}{0pt}
 \newlabel{tocindent5}{0pt}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{4}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{References}{4}{section*.7}\protected@file@percent }
-\newlabel{TotPages}{{4}{4}{}{page.4}{}}
-\gdef \@abspage@last{4}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Conclusion}{8}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{8}{section*.11}\protected@file@percent }
+\newlabel{TotPages}{{8}{8}{}{page.8}{}}
+\gdef \@abspage@last{8}

@@ -1,6 +1,6 @@
 # How to Use This LaTeX Draft
 
-This folder is the paper draft.
+This folder contains the ACM-style paper draft.
 
 ## What the files are
 
@@ -49,4 +49,4 @@ Start with these:
 3. `sections/results.tex`
 4. `references.bib`
 
-The current draft intentionally contains `TODO` markers and cautious wording. Do not remove caution around OSM pseudo-history until the data becomes cleaner.
+The current paper intentionally keeps cautious wording around OSM-derived pseudo-history profiles. Do not claim clean per-user histories unless the data source changes.

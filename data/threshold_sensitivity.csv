@@ -1,0 +1,6 @@
+config,max_gap_min,max_jump_m,min_points,min_distance_km,min_speed_kmh,max_speed_kmh,filter_max_jump_m,total_points,timestamped_points,pseudo_segments_found,useful_segments_found,segments_map_matched,map_match_success_rate,median_gps_to_route_median_m,median_route_distance_ratio,strict_prototype_usable,exploratory_usable,strict_failed_checks,exploratory_failed_checks
+current,10.0,500.0,5,0.2,1.0,80.0,500.0,25000,25000,11,11,11,1.0,6.993149290210866,2.3720077884226654,False,True,route_distance_ratio_ok,
+stricter_gap,5.0,500.0,5,0.2,1.0,80.0,500.0,25000,25000,12,12,12,1.0,6.720155223574366,2.359634573093593,False,True,route_distance_ratio_ok,
+stricter_jump,10.0,250.0,5,0.2,1.0,80.0,250.0,25000,25000,11,11,11,1.0,6.993149290210866,2.3720077884226654,False,True,route_distance_ratio_ok,
+stricter_distance,10.0,500.0,5,0.5,1.0,80.0,500.0,25000,25000,11,10,10,1.0,7.406670901214989,2.359634573093593,False,True,route_distance_ratio_ok,
+lower_speed_ceiling,10.0,500.0,5,0.2,1.0,25.0,500.0,25000,25000,11,9,9,1.0,6.317192794955253,2.3472613577645207,False,True,route_distance_ratio_ok,

@@ -2,7 +2,7 @@
 %%% Do NOT edit. File created by BibTeX with style
 %%% ACM-Reference-Format-Journals [18-Jan-2012].
 
-\begin{thebibliography}{5}
+\begin{thebibliography}{7}
 
 %%% ====================================================================
 %%% NOTE TO THE USER: you can override these defaults by providing
@@ -38,67 +38,104 @@
 
 \bibitem[Chen et~al\mbox{.}(2012)]%
         {chen2012popular}
-\bibfield{author}{\bibinfo{person}{Zaiben Chen}, \bibinfo{person}{Heng~Tao
-  Shen}, {and} \bibinfo{person}{Xiaofang Zhou}.}
+\bibfield{author}{\bibinfo{person}{Chen Chen}, \bibinfo{person}{Daqing Zhang},
+  \bibinfo{person}{Bin Guo}, \bibinfo{person}{Xiaojuan Ma},
+  \bibinfo{person}{Gang Pan}, {and} \bibinfo{person}{Zhaohui Wu}.}
   \bibinfo{year}{2012}\natexlab{}.
 \newblock \showarticletitle{Constructing Popular Routes from Uncertain
   Trajectories}. In \bibinfo{booktitle}{\emph{Proceedings of the 18th ACM
   SIGKDD International Conference on Knowledge Discovery and Data Mining}}.
+  \bibinfo{publisher}{Association for Computing Machinery},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{195--203}.
 \newblock
 \href{https://doi.org/10.1145/2339530.2339562}{doi:\nolinkurl{10.1145/2339530.2339562}}
+
+
+\bibitem[Dai et~al\mbox{.}(2015)]%
+        {dai2015bigtrajectory}
+\bibfield{author}{\bibinfo{person}{Jian Dai}, \bibinfo{person}{Bin Yang},
+  \bibinfo{person}{Chenjuan Guo}, {and} \bibinfo{person}{Zhiming Ding}.}
+  \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{Personalized Route Recommendation Using Big
+  Trajectory Data}. In \bibinfo{booktitle}{\emph{Proceedings of the 31st IEEE
+  International Conference on Data Engineering}}. \bibinfo{publisher}{IEEE},
+  \bibinfo{address}{Seoul, Republic of Korea}, \bibinfo{pages}{543--554}.
 \newblock
-\shownote{TODO: verify complete author list and pages.}.
+\href{https://doi.org/10.1109/ICDE.2015.7113313}{doi:\nolinkurl{10.1109/ICDE.2015.7113313}}
+
+
+\bibitem[Huang et~al\mbox{.}(2024)]%
+        {userhabits2024}
+\bibfield{author}{\bibinfo{person}{Yinuo Huang}, \bibinfo{person}{Xin Jin},
+  \bibinfo{person}{Miao Fan}, \bibinfo{person}{Xunwei Yang}, {and}
+  \bibinfo{person}{Fangliang Jiang}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \bibinfo{title}{Personalized Route Recommendation Based on User
+  Habits for Vehicle Navigation}.
+\newblock
+\showeprint[arxiv]{2409.14047}~[cs.IR]
+\newblock
+\shownote{Accepted by the 2024 4th International Conference on Intelligent
+  Digital Twin Systems}.
+
+
+\bibitem[S{\'a}nchez et~al\mbox{.}(2025)]%
+        {contexttrails2025}
+\bibfield{author}{\bibinfo{person}{Pablo S{\'a}nchez},
+  \bibinfo{person}{Alejandro Bellog{\'i}n}, {and} \bibinfo{person}{Jos{\'e}~L.
+  Jorro-Aragoneses}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Context Trails: A Dataset to Study Contextual and
+  Route Recommendation}. In \bibinfo{booktitle}{\emph{Proceedings of the 19th
+  ACM Conference on Recommender Systems}}. \bibinfo{publisher}{Association for
+  Computing Machinery}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{716--725}.
+\newblock
+\href{https://doi.org/10.1145/3705328.3748151}{doi:\nolinkurl{10.1145/3705328.3748151}}
 
 
 \bibitem[Tian et~al\mbox{.}(2023)]%
         {tian2023drpk}
-\bibfield{author}{\bibinfo{person}{Yuxin Tian} {et~al\mbox{.}}}
+\bibfield{author}{\bibinfo{person}{Wei Tian}, \bibinfo{person}{Jieming Shi},
+  \bibinfo{person}{Siqiang Luo}, \bibinfo{person}{Hui Li},
+  \bibinfo{person}{Xike Xie}, {and} \bibinfo{person}{Yuanhang Zou}.}
   \bibinfo{year}{2023}\natexlab{}.
 \newblock \showarticletitle{Effective and Efficient Route Planning Using
   Historical Trajectories on Road Networks}.
 \newblock \bibinfo{journal}{\emph{Proceedings of the VLDB Endowment}}
-  \bibinfo{volume}{16}, \bibinfo{number}{10} (\bibinfo{year}{2023}).
+  \bibinfo{volume}{16}, \bibinfo{number}{10} (\bibinfo{year}{2023}),
+  \bibinfo{pages}{2512--2524}.
 \newblock
-\newblock
-\shownote{TODO: verify complete author list, pages, and DOI.}.
+\href{https://doi.org/10.14778/3603581.3603591}{doi:\nolinkurl{10.14778/3603581.3603591}}
 
 
-\bibitem[TODO(2019)]%
+\bibitem[Wang et~al\mbox{.}(2019)]%
         {nasr2019}
-\bibfield{author}{\bibinfo{person}{TODO}.} \bibinfo{year}{2019}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{Jingyuan Wang}, \bibinfo{person}{Ning Wu},
+  \bibinfo{person}{Wayne~Xin Zhao}, \bibinfo{person}{Fanzhang Peng}, {and}
+  \bibinfo{person}{Xin Lin}.} \bibinfo{year}{2019}\natexlab{}.
 \newblock \showarticletitle{Empowering A* Search Algorithms with Neural
   Networks for Personalized Route Recommendation}. In
   \bibinfo{booktitle}{\emph{Proceedings of the 25th ACM SIGKDD International
   Conference on Knowledge Discovery and Data Mining}}.
+  \bibinfo{publisher}{Association for Computing Machinery},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{539--547}.
 \newblock
 \href{https://doi.org/10.1145/3292500.3330824}{doi:\nolinkurl{10.1145/3292500.3330824}}
-\newblock
-\shownote{TODO: verify author list and page numbers.}.
 
 
-\bibitem[TODO(2024)]%
-        {userhabits2024}
-\bibfield{author}{\bibinfo{person}{TODO}.} \bibinfo{year}{2024}\natexlab{}.
-\newblock \showarticletitle{Personalized Route Recommendation Based on User
-  Habits for Vehicle Navigation}. In \bibinfo{booktitle}{\emph{Proceedings of
-  the 2024 4th International Conference on Intelligent Digital Twin Systems}}.
-\newblock
-\newblock
-\shownote{Also available as arXiv:2409.14047. TODO: verify author list, pages,
-  and DOI before submission.}.
-
-
-\bibitem[TODO(2025)]%
+\bibitem[Wang et~al\mbox{.}(2025)]%
         {wang2025pts}
-\bibfield{author}{\bibinfo{person}{TODO}.} \bibinfo{year}{2025}\natexlab{}.
+\bibfield{author}{\bibinfo{person}{Zihan Wang}, \bibinfo{person}{Zhiwei Deng},
+  \bibinfo{person}{Jiaying Yuan}, \bibinfo{person}{Tianyang Wang},
+  \bibinfo{person}{Hongcheng Guo}, \bibinfo{person}{Yong Guo}, {and}
+  \bibinfo{person}{Zhaopeng Hu}.} \bibinfo{year}{2025}\natexlab{}.
 \newblock \showarticletitle{Personal Travel Solver: A Preference-Driven
   LLM-Solver System for Travel Planning}. In
   \bibinfo{booktitle}{\emph{Proceedings of the 63rd Annual Meeting of the
-  Association for Computational Linguistics}}.
+  Association for Computational Linguistics (Volume 1: Long Papers)}}.
+  \bibinfo{publisher}{Association for Computational Linguistics},
+  \bibinfo{address}{Vienna, Austria}, \bibinfo{pages}{27622--27642}.
 \newblock
-\newblock
-\shownote{ACL Anthology 2025.acl-long.1339. TODO: verify author list and
-  pages.}.
+\href{https://doi.org/10.18653/v1/2025.acl-long.1339}{doi:\nolinkurl{10.18653/v1/2025.acl-long.1339}}
 
 
 \end{thebibliography}

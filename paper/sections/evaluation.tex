@@ -1,22 +1,32 @@
-The evaluation currently has two layers: reconstruction quality and route-candidate ranking quality.
+The evaluation has three layers: reconstruction quality, threshold sensitivity, and route-candidate ranking quality. This separation is intentional because public OSM GPS trackpoints are not clean per-user histories.
 
 \subsection{Reconstruction Quality}
 The trace pipeline reports timestamp coverage, pseudo-segments found, useful segment rate, map-match success rate, GPS-to-route distance, and route-distance ratio. Strict usability requires timestamp coverage at least $0.80$, at least five useful segments, map-match success rate at least $0.70$, median GPS-to-route distance at most $100$ meters, and median route-distance ratio in $[0.5, 2.0]$. Exploratory usability relaxes only the route-distance ratio ceiling to $2.5$.
 
+\subsection{Threshold Sensitivity}
+To avoid tuning a single threshold setting, we evaluate five segmentation/filtering configurations: the current configuration, a stricter time-gap split, a stricter spatial-jump split, a stricter minimum-distance filter, and a lower speed ceiling. Each configuration is evaluated with the same reconstruction diagnostics. This study tests whether the OSM-derived pseudo-history pipeline is stable under reasonable threshold changes.
+
 \subsection{Route-Candidate Baselines}
-The corrected Phase 3 evaluation uses generated route candidates. For each held-out pseudo-history record, the evaluator:
+The route-candidate evaluation uses generated route candidates. For each held-out pseudo-history record, the evaluator:
 
 \begin{enumerate}
+  \item Uses earlier records as profile history.
   \item Uses the held-out origin and destination.
-  \item Generates up to $k=5$ OSM walking-route candidates.
-  \item Treats the held-out reconstructed route features as the observed reference.
+  \item Generates up to $k=5$ OSM walking-route candidates for the OSM trace setting, or up to $k=8$ OSM driving candidates for the Porto setting.
+  \item Treats the held-out reconstructed route features and coordinates as the observed reference.
   \item Selects the oracle candidate by minimum normalized feature distance to the observed reference.
   \item Ranks candidates using each available baseline.
 \end{enumerate}
 
 This replaces a weaker sanity check in which the held-out history record was ranked against previous history records. That older setup made shortest-distance look artificially strong because the held-out pseudo-route could be the shortest candidate by construction.
 
-\subsection{Metrics}
-Ranking quality is measured with Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. Hit@K and MRR evaluate oracle recovery. NDCG@3 uses graded feature-similarity relevance. Mean feature distance measures how close the top-ranked candidate is to the observed pseudo-route in normalized feature space.
+\subsection{Baselines}
+We compare random ranking, shortest-distance ranking, profile ranking, prompt/SBERT ranking, and hybrid ranking. For Porto, we additionally report a vehicle-aware profile ranker, a feature-oracle upper bound, and a path-oracle upper bound. The vehicle-aware profile ranker uses earlier Porto trip features but emphasizes driving-relevant signals such as distance, road-class mix, turns, intersections, and traffic signals. The feature oracle ranks by the same feature distance used to select the ranking oracle. The path oracle ranks by path overlap with the reconstructed route. Both oracle rows are used only to diagnose candidate-pool quality. Prompt/SBERT and hybrid use synthetic preference text in the OSM pseudo-history experiment; this text is labeled as synthetic and is used only as an ablation, not as evidence of real stated user preferences.
 
-\textbf{TODO:} Increase the number of queries and add confidence intervals or bootstrap intervals after collecting more trace-derived records.
+\subsection{Metrics}
+Ranking quality is measured with Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. Hit@K is one when the oracle candidate appears in the first $K$ positions. MRR is the reciprocal rank of the oracle candidate averaged across queries. NDCG@3 discounts lower-ranked relevant candidates and gives a graded top-three ranking view. Mean feature distance reports how close the top-ranked candidate is to the held-out reference in normalized feature space.
+
+Path similarity is measured with point-overlap precision/recall/F1, normalized dynamic time warping (NDTW), coordinate edit distance, and maximum nearest-point distance between the top-ranked route and the held-out reconstructed route. For the Porto public-dataset benchmark, we also report 95\% bootstrap confidence intervals over queries.
+
+\subsection{External Benchmark Goal}
+The current OSM pseudo-history evaluation is not a direct comparison against NASR, RICK, or private user-habit systems. To move toward a submission-ready comparison, we add a Porto public-dataset route-candidate benchmark. The Porto setup uses public taxi trajectories, simplifies dense GPS samples into spatially separated reconstruction anchors, reconstructs an observed route on an OSM driving graph, generates OSM route candidates for the same origin and destination, and reports ranking metrics plus path-overlap metrics. This is closer to NASR-style route recovery, but it still requires a larger sample, matched splits, and reproduced external baselines before supporting a direct claim of superiority.

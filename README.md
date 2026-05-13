@@ -34,6 +34,8 @@ scripts/
   evaluate_baselines.py           Older history-record ranking sanity check
   evaluate_route_candidate_baselines.py
                                   Current fair route-candidate baseline evaluation
+  evaluate_porto_candidate_baselines.py
+                                  Public Porto trajectory benchmark scaffold
   build_geolife_histories*.py     Legacy GeoLife scripts, not current main pipeline
   evaluate_geolife_profiles.py    Legacy GeoLife evaluation script
 
@@ -42,6 +44,8 @@ data/
   osm_trace_quality_report.json   Reconstruction/data-quality report
   route_candidate_baseline_comparison.json
   route_candidate_baseline_comparison.csv
+  porto_candidate_baseline_comparison.json
+  porto_candidate_baseline_comparison.csv
   osm_history_probe/              Raw OSM GPX pages and probe summaries
 
 docs/
@@ -173,6 +177,30 @@ Metrics:
 
 See [docs/EXPERIMENTAL_COMPARISON_STUDY.md](docs/EXPERIMENTAL_COMPARISON_STUDY.md) for current results and interpretation.
 
+## Public Porto Benchmark Scaffold
+
+The professor-facing publishable path is to add a recognized public trajectory benchmark, not to overclaim from OSM public traces alone. The first scaffold is:
+
+```powershell
+python scripts\evaluate_porto_candidate_baselines.py
+```
+
+By default it expects the Porto taxi challenge file here:
+
+```text
+data/porto/train.csv
+```
+
+If the file is missing, the script exits gracefully and writes placeholder outputs explaining that no Porto evaluation has run yet. After placing the public Porto `train.csv` file there, the script samples trips, reconstructs an observed OSM route, generates diverse route candidates for the same origin/destination, and compares random, shortest-distance, generic profile, vehicle-aware profile, feature-oracle, and path-oracle ranking with ranking metrics, path-overlap metrics, bootstrap confidence intervals, and reconstruction diagnostics. Prompt/SBERT and hybrid are skipped for Porto unless preference text is later added through a clearly labeled synthetic or collected protocol.
+
+Current 50-query prototype command:
+
+```powershell
+python scripts\evaluate_porto_candidate_baselines.py --max-tests 50 --max-rows-to-scan 12000 --sample-stride 50 --k-routes 8 --dist-meters 2500 --bootstrap-samples 1000 --min-anchor-spacing-m 80 --max-anchors 60
+```
+
+The current reconstruction-quality improvement is simplified GPS anchoring before stitching sampled points across the OSM graph. On the 50-query Porto run, this reduced mean observed route-distance ratio from about `2.82` to `2.69` and median ratio from about `2.17` to `2.04`, while using about `62%` of the raw sampled points as reconstruction anchors. This is a modest improvement, not a solved map-matching result: `28/50` evaluated queries still exceed route-distance ratio `2.0`.
+
 ## Important Research Caveats
 
 - Do not claim OSM public GPS traces are clean user histories.
@@ -193,6 +221,8 @@ Use these documents as the research navigation map:
 | [docs/RELATED_WORK_TABLE.md](docs/RELATED_WORK_TABLE.md) | Compact related-work comparison table for the initially selected papers. Useful for paper-writing and professor check-ins. |
 | [docs/BASELINE_SELECTION_STUDY.md](docs/BASELINE_SELECTION_STUDY.md) | Broader baseline-selection study. Compares candidate papers by task, dataset availability, code availability, metrics, and whether direct comparison is valid. |
 | [docs/EXPERIMENTAL_COMPARISON_STUDY.md](docs/EXPERIMENTAL_COMPARISON_STUDY.md) | Current experiment report. Summarizes route-candidate baseline results, path metrics, reconstruction diagnostics, and honest interpretation. |
+| [docs/THRESHOLD_SENSITIVITY_STUDY.md](docs/THRESHOLD_SENSITIVITY_STUDY.md) | Sensitivity study for segmentation/filtering thresholds. Shows the OSM pipeline remains exploratory-usable but still fails strict route-distance-ratio checks. |
+| [docs/PUBLISHABLE_BENCHMARK_PLAN.md](docs/PUBLISHABLE_BENCHMARK_PLAN.md) | Roadmap for the professor's publication goal: same-data public benchmark, recognized metrics, credible baselines, and conditions required before claiming we beat prior work. |
 | [docs/RESEARCH_GAP_AND_NOVELTY.md](docs/RESEARCH_GAP_AND_NOVELTY.md) | Novelty memo: what prior work does, what this system does, the gap, the defensible baseline story, and what must improve before submission. |
 | [docs/framework_diagram.mmd](docs/framework_diagram.mmd) | Mermaid source for the framework diagram: OSM public GPS trackpoints through ranking and evaluation. |
 | [docs/flowchart_background.md](docs/flowchart_background.md) | Plain-language explanation of each box in the Mermaid framework diagram. |

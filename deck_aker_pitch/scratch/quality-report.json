@@ -1,0 +1,14 @@
+{
+  "workspace": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\deck_aker_pitch",
+  "pptx": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\deck_aker_pitch\\output\\RouteGraphRAG_Aker_Product_Pitch.pptx",
+  "checks": {
+    "output_hygiene": {
+      "output_dir": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\deck_aker_pitch\\output",
+      "unexpected_files": []
+    }
+  },
+  "failures": [
+    "PPTX package inspection failed: unzip -Z1 C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\deck_aker_pitch\\output\\RouteGraphRAG_Aker_Product_Pitch.pptx failed"
+  ],
+  "warnings": []
+}

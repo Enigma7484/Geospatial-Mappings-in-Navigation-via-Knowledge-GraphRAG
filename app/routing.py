@@ -25,7 +25,7 @@ def route_edge_data_min_len(GX, route):
         if isinstance(ed, dict):
             best = min(ed.values(), key=lambda d: d.get("length", float("inf")))
             edges.append(best)
-        else:
+        elif ed is not None:
             edges.append(ed)
     return edges
 
@@ -157,6 +157,8 @@ def safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct, w
     edges_proj = route_edge_data_min_len(G_proj, route)
     lit_m, tunnel_m = 0.0, 0.0
     for e in edges_proj:
+        if e is None:
+            continue
         length = e.get("length", 0.0) or 0.0
         lit = e.get("lit", None)
         if isinstance(lit, list):
@@ -252,6 +254,8 @@ def compute_route_features(G, G_proj, parks_union, route):
     residential_set = {"residential", "unclassified"}
     service_set = {"service"}
     for e in edges:
+        if e is None:
+            continue
         length = e.get("length", 0.0) or 0.0
         total_len += length
         hwy = normalize_highway_tag(e.get("highway"))
@@ -273,6 +277,8 @@ def compute_route_features(G, G_proj, parks_union, route):
     near_park_m, min_park_dist = 0.0, float("inf")
     if parks_union is not None:
         for e in edges_proj:
+            if e is None:
+                continue
             length = e.get("length", 0.0) or 0.0
             geom = e.get("geometry", None)
             if geom is None:

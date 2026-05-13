@@ -140,7 +140,7 @@ Modes:
 
 Current limitation:
 
-- Prompt/SBERT and hybrid are skipped for the current OSM pseudo-history evaluation because the records do not include preference text.
+- Prompt/SBERT and hybrid now run when the OSM pseudo-history records include clearly labeled synthetic preference text. These runs should be interpreted as prompt-ranking ablations, not as evidence of real user-stated preferences.
 
 ## 8. Evaluation Metrics
 

@@ -1,28 +1,91 @@
-This section reports current prototype outputs only. They should not be treated as final experimental evidence.
+This section reports the current prototype outputs. The results support a strengthened research direction, but not yet a claim of superiority over reproduced external systems.
 
 \subsection{Trace Reconstruction}
-The Toronto OSM trace probe currently contains $15{,}000$ parsed trackpoints with timestamp coverage $1.00$. The pipeline found $6$ pseudo-segments and $6$ useful segments, for a useful segment rate of $1.00$. Approximate map matching succeeded for all attempted useful segments. The median GPS-to-route median distance is approximately $7.17$ meters, indicating close geometric alignment between sampled points and reconstructed routes. However, the median route-distance ratio is approximately $2.15$, above the strict target ceiling of $2.0$.
+The Toronto OSM trace probe currently contains $25{,}000$ parsed trackpoints with timestamp coverage $1.00$. The pipeline found $11$ pseudo-segments and $11$ useful segments, for a useful segment rate of $1.00$. Approximate map matching succeeded for all attempted useful segments. The median GPS-to-route median distance is approximately $6.99$ meters, indicating close geometric alignment between sampled points and reconstructed routes. However, the median route-distance ratio is approximately $2.37$, above the strict target ceiling of $2.0$.
 
 Therefore, the current strict prototype usability flag is false. The exploratory usability flag is true under the looser $2.5$ route-distance-ratio ceiling. This distinction is central: the data is useful for exploratory pseudo-history experiments, but the reconstruction is not yet clean enough for strong claims about route fidelity.
 
-\subsection{Route-Candidate Ranking}
-The corrected route-candidate baseline evaluation currently runs on $3$ held-out pseudo-history queries. Prompt/SBERT and hybrid baselines are skipped because the OSM pseudo-history records do not include preference text.
+\subsection{Threshold Sensitivity}
+Table~\ref{tab:threshold_sensitivity} shows that the route-distance-ratio failure is stable across several reasonable threshold choices. This is useful evidence because it shows the reconstruction limitation is not hidden by one chosen configuration.
 
-\begin{table}[h]
+\begin{table*}[t]
   \centering
-  \caption{Current route-candidate baseline results. These are preliminary and use only three held-out pseudo-history queries.}
+  \caption{Threshold sensitivity over OSM-derived pseudo-history reconstruction. All configurations remain exploratory-usable but fail strict usability due to route-distance ratio.}
+  \label{tab:threshold_sensitivity}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Config & Useful & GPS med. & Ratio med. & Strict \\
+    \midrule
+    Current & 11 & 6.99 & 2.37 & No \\
+    Stricter gap & 12 & 6.72 & 2.36 & No \\
+    Stricter jump & 11 & 6.99 & 2.37 & No \\
+    Stricter distance & 10 & 7.41 & 2.36 & No \\
+    Lower speed ceiling & 9 & 6.32 & 2.35 & No \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\subsection{Route-Candidate Ranking}
+The corrected route-candidate baseline evaluation currently runs on $8$ held-out pseudo-history queries. Table~\ref{tab:route_candidate_results} reports the current ranking metrics.
+
+\begin{table*}[t]
+  \centering
+  \caption{Current route-candidate baseline results over eight held-out OSM pseudo-history queries. Prompt/SBERT and hybrid use synthetic preference text and should be interpreted as ablations.}
   \label{tab:route_candidate_results}
   \begin{tabular}{lccccc}
     \toprule
     Method & Hit@1 & Hit@3 & MRR & NDCG@3 & Mean Dist. \\
     \midrule
-    Random & 0.000 & 0.667 & 0.344 & 0.645 & 2.234 \\
-    Shortest-distance & 0.333 & 0.667 & 0.528 & 0.740 & 2.143 \\
-    Profile & 0.333 & 0.667 & 0.511 & 0.840 & 2.116 \\
+    Random & 0.375 & 0.750 & 0.583 & 0.668 & 2.622 \\
+    Shortest-distance & 0.250 & 0.625 & 0.456 & 0.690 & 2.579 \\
+    Profile & 0.375 & 0.625 & 0.540 & 0.727 & 2.582 \\
+    Prompt/SBERT & 0.250 & 0.500 & 0.481 & 0.673 & 2.552 \\
+    Hybrid & 0.250 & 0.500 & 0.467 & 0.672 & 2.613 \\
     \bottomrule
   \end{tabular}
-\end{table}
+\end{table*}
 
-The profile method has the best NDCG@3 and mean feature distance in this small run, while shortest-distance has slightly higher MRR. Because $n=3$, these numbers should be interpreted as smoke-test evidence that the evaluation is functioning, not as proof of superiority.
+The profile method improves over shortest-distance on Hit@1, MRR, NDCG@3, path F1, NDTW, edit distance, and maximum path distance in the current run. However, the sample remains small and noisy. These results are best interpreted as evidence that the evaluation pipeline and profile-ranking idea are functioning, not as proof that the method beats external personalized route-recommendation systems.
 
-\textbf{TODO:} Add results for prompt/SBERT and hybrid once preference text is available. Add a stronger learned baseline if enough records are collected.
+\subsection{Path-Similarity Metrics}
+Against held-out reconstructed route coordinates, the profile method achieves mean path F1 of $0.630$ and mean NDTW of $0.351$, compared with $0.601$ and $0.344$ for shortest-distance. The improvement is directionally promising but not yet publication-grade without a larger public benchmark and confidence intervals.
+
+\subsection{Porto Public-Dataset Prototype}
+To begin moving toward a same-data public benchmark, we also ran a Porto taxi trajectory prototype using the public ECML/PKDD taxi trajectory data. This experiment samples trips from the Porto training file, reconstructs an observed OSM driving route using simplified GPS anchors, generates up to eight diverse OSM driving-route candidates for the same origin and destination, and ranks the candidates using random, shortest-distance, generic profile, and vehicle-aware profile baselines. We also report two oracle upper bounds: a feature oracle, which ranks candidates by the same feature-distance criterion used to define the ranking oracle, and a path oracle, which ranks candidates by path overlap with the reconstructed route. These oracle rows diagnose candidate-pool quality and are not deployable methods. Prompt/SBERT and hybrid methods are skipped because Porto trajectories do not include natural-language route preferences.
+
+\begin{table*}[t]
+  \centering
+  \caption{Prototype Porto public-dataset route-candidate results over 50 sampled queries. Values in parentheses are 95\% bootstrap confidence intervals. This is a scaled engineering milestone, not a final external-baseline result.}
+  \label{tab:porto_results}
+  \begin{tabular}{lccc}
+    \toprule
+    Method & Hit@1 & Hit@3 & MRR \\
+    \midrule
+    Feature oracle & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) \\
+    Path oracle & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) \\
+    Random & 0.180 (0.080, 0.281) & 0.620 (0.480, 0.760) & 0.441 (0.367, 0.523) \\
+    Shortest-distance & 0.100 (0.020, 0.200) & 0.380 (0.240, 0.520) & 0.310 (0.245, 0.380) \\
+    Profile & 0.120 (0.040, 0.220) & 0.400 (0.260, 0.540) & 0.342 (0.273, 0.417) \\
+    Vehicle profile & 0.260 (0.140, 0.400) & 0.600 (0.440, 0.720) & 0.478 (0.393, 0.569) \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \begin{tabular}{lcccc}
+    \toprule
+    Method & NDCG@3 & Mean Dist. & Path F1 & NDTW \\
+    \midrule
+    Feature oracle & 1.000 (1.000, 1.000) & 2.104 (1.999, 2.213) & 0.541 (0.466, 0.611) & 0.236 (0.162, 0.320) \\
+    Path oracle & 1.000 (1.000, 1.000) & 2.307 (2.201, 2.418) & 0.590 (0.515, 0.657) & 0.261 (0.184, 0.343) \\
+    Random & 0.605 (0.538, 0.674) & 2.317 (2.204, 2.428) & 0.514 (0.442, 0.586) & 0.225 (0.159, 0.306) \\
+    Shortest-distance & 0.509 (0.419, 0.604) & 2.385 (2.280, 2.480) & 0.515 (0.445, 0.586) & 0.215 (0.139, 0.289) \\
+    Profile & 0.517 (0.419, 0.613) & 2.374 (2.291, 2.459) & 0.451 (0.384, 0.516) & 0.169 (0.110, 0.238) \\
+    Vehicle profile & 0.732 (0.649, 0.808) & 2.226 (2.121, 2.333) & 0.501 (0.435, 0.566) & 0.196 (0.132, 0.271) \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+In this 50-query run, the vehicle-aware profile improves over shortest-distance and generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. It remains close to random on Hit@3 and does not improve path F1 or NDTW. The simplified-anchor reconstruction reduces mean observed route-distance ratio from the prior dense-stitching value of about $2.82$ to $2.69$ and the median from $2.17$ to $2.04$, while reducing the mean number of reconstruction anchors to 62\% of raw trace points. This is an improvement, but not a solution: 28 of 50 evaluated queries still have ratio above $2.0$, and the path oracle still reaches only $0.590$ path F1 and $0.261$ NDTW. The important result is therefore not that the proposed method is already superior to external systems, but that the project now has a concrete public-dataset evaluation path with uncertainty estimates and diagnostics.
+
+\subsection{Result Summary}
+The OSM public-trace experiment shows that the full pseudo-history pipeline is operational, but strict reconstruction quality is not yet sufficient. The Porto experiment provides a stronger public-dataset evaluation path: vehicle-aware profile ranking improves over shortest-distance and the generic profile on ranking metrics, while path metrics and oracle ceilings reveal that reconstruction and candidate generation are still the limiting factors. This combination is useful for a submission because it avoids hiding negative evidence while still showing a concrete technical contribution.

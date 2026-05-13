@@ -16,7 +16,7 @@ Current caveat:
 
 - OSM public GPS traces are not clean per-user histories.
 - Current trace reconstruction is exploratory-useful but not strict-clean.
-- Prompt/SBERT and hybrid cannot be evaluated on the current OSM pseudo-history file because no preference text exists.
+- Prompt/SBERT and hybrid can now run using clearly labeled synthetic preference text generated from reconstructed route features. These results are ablations, not evidence about real user-stated preferences.
 
 ## Candidate Paper Audit
 
