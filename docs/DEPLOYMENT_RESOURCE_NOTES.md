@@ -22,10 +22,10 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
 
 Multiple workers multiply memory usage because each worker keeps its own OSM graph cache and, for prompt/hybrid mode, its own embedding model.
 
-The included `render.yaml` uses `requirements-light.txt`, which excludes `sentence-transformers` and `scikit-learn`. That keeps the cheap deployment focused on `ranking_mode="profile"`. For full prompt/hybrid ranking, switch the build command back to:
+The default `requirements.txt` is intentionally lightweight and excludes `torch`, `sentence-transformers`, and `scikit-learn`. That keeps the cheap deployment focused on `ranking_mode="profile"`. For full prompt/hybrid ranking, switch the build command to:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-full.txt
 ```
 
 Full prompt/hybrid mode will need more memory because it loads the embedding model stack.
@@ -44,4 +44,3 @@ The API exposes:
 3. Move prompt/hybrid ranking or large-distance route generation to a stronger worker machine.
 4. Add a background job queue if route generation starts timing out under real users.
 5. Precompute/cache common demo routes before presentations when possible.
-

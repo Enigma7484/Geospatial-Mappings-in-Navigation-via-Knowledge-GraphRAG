@@ -6,6 +6,8 @@ services:
     buildCommand: pip install -r requirements-light.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
       - key: GEOROUTE_ENABLE_PARKS
         value: "0"
       - key: GEOROUTE_GRAPH_CACHE_SIZE
