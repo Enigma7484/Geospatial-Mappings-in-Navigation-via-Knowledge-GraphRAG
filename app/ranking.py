@@ -1,4 +1,8 @@
 import os
+import re
+from collections import Counter
+
+import numpy as np
 
 
 _model = None
@@ -22,11 +26,30 @@ def get_model():
     return _model
 
 
-def rank_route_texts(route_texts: list[str], user_pref: str):
-    from sklearn.metrics.pairwise import cosine_similarity
+def lexical_rank_route_texts(route_texts: list[str], user_pref: str):
+    query_terms = Counter(re.findall(r"[a-z0-9]+", user_pref.lower()))
+    if not query_terms:
+        return np.ones(len(route_texts), dtype=float) * 0.5
 
-    model = get_model()
-    emb_routes = model.encode(route_texts, normalize_embeddings=True)
-    emb_user = model.encode([user_pref], normalize_embeddings=True)
-    scores = cosine_similarity(emb_user, emb_routes)[0]
-    return scores
+    scores = []
+    query_norm = np.sqrt(sum(v * v for v in query_terms.values()))
+    for text in route_texts:
+        route_terms = Counter(re.findall(r"[a-z0-9]+", text.lower()))
+        route_norm = np.sqrt(sum(v * v for v in route_terms.values()))
+        if route_norm == 0:
+            scores.append(0.0)
+            continue
+        dot = sum(query_terms[t] * route_terms.get(t, 0) for t in query_terms)
+        scores.append(dot / (query_norm * route_norm))
+    return np.asarray(scores, dtype=float)
+
+
+def rank_route_texts(route_texts: list[str], user_pref: str):
+    try:
+        model = get_model()
+    except ImportError:
+        return lexical_rank_route_texts(route_texts, user_pref)
+
+    emb_routes = np.asarray(model.encode(route_texts, normalize_embeddings=True))
+    emb_user = np.asarray(model.encode([user_pref], normalize_embeddings=True))[0]
+    return emb_routes @ emb_user
