@@ -1,15 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Literal
 
 
 class RankRoutesRequest(BaseModel):
-    origin: str
-    destination: str
+    origin: Any
+    destination: Any
     preference: Optional[str] = None
     user_id: Optional[str] = None
     request_datetime: Optional[str] = None
-    dist_meters: int = 4000
-    k_routes: int = 5
+    dist_meters: int = Field(default=4000, ge=500)
+    k_routes: int = Field(default=5, ge=1)
     ranking_mode: Literal["prompt", "profile", "hybrid"] = "profile"
 
 
@@ -37,8 +37,8 @@ class RouteResponse(BaseModel):
 
 
 class RankRoutesResponse(BaseModel):
-    origin: str
-    destination: str
+    origin: Any
+    destination: Any
     preference: Optional[str] = None
     user_id: Optional[str] = None
     ranking_mode: str

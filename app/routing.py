@@ -1,7 +1,19 @@
+import os
+from functools import lru_cache
+from pathlib import Path
 import osmnx as ox
 import numpy as np
 from collections import Counter
 from typing import Any
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CACHE_DIR = Path(os.getenv("GEOROUTE_CACHE_DIR", PROJECT_ROOT / "cache"))
+GRAPH_CACHE_SIZE = int(os.getenv("GEOROUTE_GRAPH_CACHE_SIZE", "2"))
+ROUTE_CACHE_SIZE = int(os.getenv("GEOROUTE_ROUTE_CACHE_SIZE", "16"))
+ENABLE_PARKS = os.getenv("GEOROUTE_ENABLE_PARKS", "1").lower() not in {"0", "false", "no"}
+
+ox.settings.use_cache = True
+ox.settings.cache_folder = str(CACHE_DIR)
 
 
 def resolve_location(location: Any):
@@ -10,6 +22,21 @@ def resolve_location(location: Any):
     if isinstance(location, (list, tuple)) and len(location) == 2:
         return (float(location[0]), float(location[1]))
     return ox.geocode(location)
+
+
+def normalize_location_key(location: Any):
+    if isinstance(location, dict):
+        return ("point", round(float(location["lat"]), 5), round(float(location["lon"]), 5))
+    if isinstance(location, (list, tuple)) and len(location) == 2:
+        return ("point", round(float(location[0]), 5), round(float(location[1]), 5))
+    return ("place", str(location).strip().lower())
+
+
+def resolve_location_key(location_key):
+    kind = location_key[0]
+    if kind == "point":
+        return (float(location_key[1]), float(location_key[2]))
+    return ox.geocode(location_key[1])
 
 
 def normalize_highway_tag(hwy):
@@ -206,6 +233,8 @@ def route_to_coordinates(G, route):
 
 
 def get_parks_union(origin_point, dist_meters, G_proj):
+    if not ENABLE_PARKS:
+        return None
     tags = {"leisure": ["park", "garden", "playground"], "landuse": ["grass", "recreation_ground"], "natural": ["wood"]}
     try:
         parks = ox.features_from_point(origin_point, tags=tags, dist=dist_meters)
@@ -227,8 +256,9 @@ def get_parks_union(origin_point, dist_meters, G_proj):
         return parks_proj.geometry.unary_union
 
 
-def build_graph_and_parks(origin, dist_meters: int):
-    orig_point = resolve_location(origin)
+@lru_cache(maxsize=GRAPH_CACHE_SIZE)
+def build_graph_and_parks_cached(origin_key, dist_meters: int):
+    orig_point = resolve_location_key(origin_key)
     G = ox.graph_from_point(orig_point, dist=dist_meters, network_type="walk")
     G = ox.distance.add_edge_lengths(G)
     try:
@@ -242,6 +272,10 @@ def build_graph_and_parks(origin, dist_meters: int):
     parks_union = get_parks_union(orig_point, dist_meters, G_proj)
     annotate_edge_generation_costs(G, G_proj, parks_union)
     return G, G_proj, parks_union
+
+
+def build_graph_and_parks(origin, dist_meters: int):
+    return build_graph_and_parks_cached(normalize_location_key(origin), int(dist_meters))
 
 
 def compute_route_features(G, G_proj, parks_union, route):
@@ -323,10 +357,11 @@ def compute_route_features(G, G_proj, parks_union, route):
     }
 
 
-def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: int):
-    G, G_proj, parks_union = build_graph_and_parks(origin, dist_meters)
-    orig_point = resolve_location(origin)
-    dest_point = resolve_location(destination)
+@lru_cache(maxsize=ROUTE_CACHE_SIZE)
+def generate_rankable_routes_cached(origin_key, destination_key, dist_meters: int, k_routes: int):
+    G, G_proj, parks_union = build_graph_and_parks_cached(origin_key, int(dist_meters))
+    orig_point = resolve_location_key(origin_key)
+    dest_point = resolve_location_key(destination_key)
     orig_node = ox.distance.nearest_nodes(G, X=orig_point[1], Y=orig_point[0])
     dest_node = ox.distance.nearest_nodes(G, X=dest_point[1], Y=dest_point[0])
     routes = generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes)
@@ -336,3 +371,12 @@ def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: in
         route_feature_dicts.append(feat)
         route_texts.append(feat["summary"])
     return route_feature_dicts, route_texts
+
+
+def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: int):
+    return generate_rankable_routes_cached(
+        normalize_location_key(origin),
+        normalize_location_key(destination),
+        int(dist_meters),
+        int(k_routes),
+    )

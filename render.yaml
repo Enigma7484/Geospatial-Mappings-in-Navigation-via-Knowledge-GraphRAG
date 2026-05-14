@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: georoute-preference-api
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements-light.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
+    envVars:
+      - key: GEOROUTE_ENABLE_PARKS
+        value: "0"
+      - key: GEOROUTE_GRAPH_CACHE_SIZE
+        value: "1"
+      - key: GEOROUTE_ROUTE_CACHE_SIZE
+        value: "8"
+      - key: GEOROUTE_MAX_DIST_METERS
+        value: "2500"
+      - key: GEOROUTE_MAX_K_ROUTES
+        value: "3"
