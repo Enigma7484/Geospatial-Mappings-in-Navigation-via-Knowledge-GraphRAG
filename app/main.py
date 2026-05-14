@@ -1,14 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-import os
 
 from .schemas import RankRoutesRequest, RankRoutesResponse, RouteResponse
 
 print("Starting FastAPI app...")
-
-MAX_DIST_METERS = int(os.getenv("GEOROUTE_MAX_DIST_METERS", "4000"))
-MAX_K_ROUTES = int(os.getenv("GEOROUTE_MAX_K_ROUTES", "5"))
 
 app = FastAPI(title="GeoRoute Preference API")
 
@@ -35,28 +31,6 @@ def root():
     return {"message": "GeoRoute Preference API is running"}
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-
-@app.get("/runtime")
-def runtime():
-    from .routing import build_graph_and_parks_cached, generate_rankable_routes_cached
-
-    return {
-        "status": "ok",
-        "limits": {
-            "max_dist_meters": MAX_DIST_METERS,
-            "max_k_routes": MAX_K_ROUTES,
-        },
-        "cache": {
-            "graphs": build_graph_and_parks_cached.cache_info()._asdict(),
-            "routes": generate_rankable_routes_cached.cache_info()._asdict(),
-        },
-    }
-
-
 @app.post("/rank-routes", response_model=RankRoutesResponse)
 def rank_routes(payload: RankRoutesRequest):
     from .routing import generate_rankable_routes
@@ -71,29 +45,12 @@ def rank_routes(payload: RankRoutesRequest):
 
     context = get_request_context(payload.request_datetime)
 
-    if payload.dist_meters > MAX_DIST_METERS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"dist_meters must be <= {MAX_DIST_METERS} on this deployment.",
-        )
-    if payload.k_routes > MAX_K_ROUTES:
-        raise HTTPException(
-            status_code=400,
-            detail=f"k_routes must be <= {MAX_K_ROUTES} on this deployment.",
-        )
-
-    try:
-        route_feature_dicts, route_texts = generate_rankable_routes(
-            origin=payload.origin,
-            destination=payload.destination,
-            dist_meters=payload.dist_meters,
-            k_routes=payload.k_routes,
-        )
-    except Exception as exc:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Route generation failed: {type(exc).__name__}: {exc}",
-        ) from exc
+    route_feature_dicts, route_texts = generate_rankable_routes(
+        origin=payload.origin,
+        destination=payload.destination,
+        dist_meters=payload.dist_meters,
+        k_routes=payload.k_routes,
+    )
 
     if not route_feature_dicts:
         raise HTTPException(status_code=404, detail="No route candidates could be generated.")
@@ -108,13 +65,7 @@ def rank_routes(payload: RankRoutesRequest):
                 status_code=400,
                 detail="ranking_mode='prompt' or 'hybrid' requires a non-empty 'preference'.",
             )
-        try:
-            sbert_scores = minmax(rank_route_texts(route_texts, payload.preference))
-        except Exception as exc:
-            raise HTTPException(
-                status_code=502,
-                detail=f"Prompt ranking failed: {type(exc).__name__}: {exc}",
-            ) from exc
+        sbert_scores = minmax(rank_route_texts(route_texts, payload.preference))
 
     if payload.ranking_mode in {"profile", "hybrid"}:
         if not payload.user_id:

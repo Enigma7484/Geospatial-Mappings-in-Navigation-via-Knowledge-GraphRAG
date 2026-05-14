@@ -2,7 +2,6 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime
-from functools import lru_cache
 from typing import Dict, Any, List, Optional
 import numpy as np
 
@@ -15,13 +14,6 @@ def get_data_path() -> Path:
         p = Path(env_path)
         return p if p.is_absolute() else Path(__file__).resolve().parent.parent / p
     return DEFAULT_DATA_PATH
-
-
-@lru_cache(maxsize=4)
-def load_user_history_file(data_path: str, mtime_ns: int) -> Dict[str, Any]:
-    del mtime_ns
-    with open(data_path, "r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 def parse_dt(dt_str: Optional[str]) -> datetime:
@@ -75,8 +67,8 @@ def load_user_history(user_id: str) -> List[Dict[str, Any]]:
     data_path = get_data_path()
     if not data_path.exists():
         return []
-    stat = data_path.stat()
-    data = load_user_history_file(str(data_path), stat.st_mtime_ns)
+    with open(data_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
     return data.get(user_id, [])
 
 
