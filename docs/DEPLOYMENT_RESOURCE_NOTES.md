@@ -22,7 +22,7 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1
 
 Multiple workers multiply memory usage because each worker keeps its own OSM graph cache and, for prompt/hybrid mode, its own embedding model.
 
-The default `requirements.txt` is intentionally lightweight and excludes `torch`, `sentence-transformers`, and `scikit-learn`. Prompt/hybrid ranking still works in this mode, but it uses a lightweight lexical fallback instead of SBERT embeddings. For full semantic prompt/hybrid ranking, switch the build command to:
+The default `requirements.txt` is intentionally lightweight and excludes `torch`, `sentence-transformers`, and `scikit-learn`. Prompt/hybrid ranking still works in this mode, but it uses a lightweight lexical fallback instead of SBERT embeddings. For full semantic prompt/hybrid ranking, set `GEOROUTE_USE_SBERT=1` and switch the build command to:
 
 ```bash
 pip install -r requirements-full.txt

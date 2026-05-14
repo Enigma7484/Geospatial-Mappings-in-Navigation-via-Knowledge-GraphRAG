@@ -6,6 +6,7 @@ import numpy as np
 
 
 _model = None
+USE_SBERT = os.getenv("GEOROUTE_USE_SBERT", "0").lower() in {"1", "true", "yes"}
 
 # Windows can fail to initialize PyTorch DLLs when the transformer stack imports
 # torch indirectly under heavier CPU-thread defaults. Keep the SBERT baseline
@@ -45,6 +46,9 @@ def lexical_rank_route_texts(route_texts: list[str], user_pref: str):
 
 
 def rank_route_texts(route_texts: list[str], user_pref: str):
+    if not USE_SBERT:
+        return lexical_rank_route_texts(route_texts, user_pref)
+
     try:
         model = get_model()
     except ImportError:

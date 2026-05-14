@@ -82,12 +82,18 @@ def rank_routes(payload: RankRoutesRequest):
             detail=f"k_routes must be <= {MAX_K_ROUTES} on this deployment.",
         )
 
-    route_feature_dicts, route_texts = generate_rankable_routes(
-        origin=payload.origin,
-        destination=payload.destination,
-        dist_meters=payload.dist_meters,
-        k_routes=payload.k_routes,
-    )
+    try:
+        route_feature_dicts, route_texts = generate_rankable_routes(
+            origin=payload.origin,
+            destination=payload.destination,
+            dist_meters=payload.dist_meters,
+            k_routes=payload.k_routes,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Route generation failed: {type(exc).__name__}: {exc}",
+        ) from exc
 
     if not route_feature_dicts:
         raise HTTPException(status_code=404, detail="No route candidates could be generated.")
@@ -104,13 +110,10 @@ def rank_routes(payload: RankRoutesRequest):
             )
         try:
             sbert_scores = minmax(rank_route_texts(route_texts, payload.preference))
-        except ImportError as exc:
+        except Exception as exc:
             raise HTTPException(
-                status_code=503,
-                detail=(
-                    "Prompt ranking dependencies are not installed on this deployment. "
-                    "Use ranking_mode='profile' or deploy with requirements.txt."
-                ),
+                status_code=502,
+                detail=f"Prompt ranking failed: {type(exc).__name__}: {exc}",
             ) from exc
 
     if payload.ranking_mode in {"profile", "hybrid"}:
