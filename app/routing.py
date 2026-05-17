@@ -18,6 +18,18 @@ def normalize_highway_tag(hwy):
     return hwy if hwy else "unknown"
 
 
+def highway_values(hwy):
+    if isinstance(hwy, list):
+        return {str(value) for value in hwy}
+    if hwy:
+        return {str(hwy)}
+    return {"unknown"}
+
+
+def highway_matches(hwy, values):
+    return bool(highway_values(hwy) & values)
+
+
 def route_edge_data_min_len(GX, route):
     edges = []
     for u, v in zip(route[:-1], route[1:]):
@@ -64,7 +76,7 @@ def annotate_edge_generation_costs(G, G_proj, parks_union):
             scenic_cost *= 0.92
         if hwy in residential_set:
             scenic_cost *= 0.95
-        if hwy in major_set:
+        if highway_matches(data.get("highway"), major_set):
             scenic_cost *= 1.35
         if hwy in service_set:
             scenic_cost *= 1.08
@@ -84,14 +96,14 @@ def annotate_edge_generation_costs(G, G_proj, parks_union):
             safe_cost *= 0.90
         if hwy in residential_set:
             safe_cost *= 0.94
-        if hwy in major_set:
+        if highway_matches(data.get("highway"), major_set):
             safe_cost *= 1.40
         if hwy in service_set:
             safe_cost *= 1.12
 
         target_deg = G.degree[v] if v in G.nodes else 2
         simple_cost = length + max(target_deg - 2, 0) * 12.0
-        if hwy in major_set:
+        if highway_matches(data.get("highway"), major_set):
             simple_cost += 18.0
         if hwy in service_set:
             simple_cost += 10.0
@@ -227,6 +239,40 @@ def get_parks_union(origin_point, dist_meters, G_proj):
         return parks_proj.geometry.unary_union
 
 
+def get_major_roads_union(origin_point, dist_meters, G_proj):
+    major_set = {
+        "primary",
+        "secondary",
+        "tertiary",
+        "trunk",
+        "primary_link",
+        "secondary_link",
+        "tertiary_link",
+        "trunk_link",
+    }
+    tags = {"highway": list(major_set)}
+    try:
+        roads = ox.features_from_point(origin_point, tags=tags, dist=dist_meters)
+    except Exception:
+        try:
+            roads = ox.geometries_from_point(origin_point, tags=tags, dist=dist_meters)
+        except Exception:
+            roads = None
+    if roads is None or len(roads) == 0:
+        return None
+
+    roads = roads[roads.geometry.type.isin(["LineString", "MultiLineString"])].copy()
+    if len(roads) == 0:
+        return None
+
+    nodes_proj = ox.graph_to_gdfs(G_proj, nodes=True, edges=False)
+    roads_proj = roads.to_crs(nodes_proj.crs)
+    try:
+        return roads_proj.geometry.union_all()
+    except Exception:
+        return roads_proj.geometry.unary_union
+
+
 def build_graph_and_parks(origin, dist_meters: int):
     orig_point = resolve_location(origin)
     G = ox.graph_from_point(orig_point, dist=dist_meters, network_type="walk")
@@ -240,11 +286,12 @@ def build_graph_and_parks(origin, dist_meters: int):
             pass
     G_proj = ox.project_graph(G)
     parks_union = get_parks_union(orig_point, dist_meters, G_proj)
+    major_roads_union = get_major_roads_union(orig_point, dist_meters, G_proj)
     annotate_edge_generation_costs(G, G_proj, parks_union)
-    return G, G_proj, parks_union
+    return G, G_proj, parks_union, major_roads_union
 
 
-def compute_route_features(G, G_proj, parks_union, route):
+def compute_route_features(G, G_proj, parks_union, major_roads_union, route):
     edges = route_edge_data_min_len(G, route)
     edges_proj = route_edge_data_min_len(G_proj, route)
     total_len = major_m = walk_m = residential_m = service_m = 0.0
@@ -260,7 +307,7 @@ def compute_route_features(G, G_proj, parks_union, route):
         total_len += length
         hwy = normalize_highway_tag(e.get("highway"))
         hwy_counts[hwy] += 1
-        if hwy in major_set:
+        if highway_matches(e.get("highway"), major_set):
             major_m += length
         if hwy in walk_set:
             walk_m += length
@@ -291,6 +338,24 @@ def compute_route_features(G, G_proj, parks_union, route):
                 min_park_dist = min(min_park_dist, d)
                 if d <= 50:
                     near_park_m += length
+    if major_roads_union is not None:
+        for e in edges_proj:
+            if e is None:
+                continue
+            hwy = e.get("highway")
+            if highway_matches(hwy, major_set):
+                continue
+            length = e.get("length", 0.0) or 0.0
+            geom = e.get("geometry", None)
+            if geom is None:
+                continue
+            try:
+                near_major = geom.distance(major_roads_union) <= 25
+            except Exception:
+                near_major = False
+            if near_major:
+                major_m += length
+        major_pct = 100 * min(major_m, total_len) / total_len if total_len else 0.0
     park_near_pct = 100.0 * near_park_m / total_len if total_len > 0 else 0.0
     min_park_dist = None if min_park_dist == float("inf") else float(min_park_dist)
     safety = safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct, walk_pct, residential_pct)
@@ -324,7 +389,7 @@ def compute_route_features(G, G_proj, parks_union, route):
 
 
 def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: int):
-    G, G_proj, parks_union = build_graph_and_parks(origin, dist_meters)
+    G, G_proj, parks_union, major_roads_union = build_graph_and_parks(origin, dist_meters)
     orig_point = resolve_location(origin)
     dest_point = resolve_location(destination)
     orig_node = ox.distance.nearest_nodes(G, X=orig_point[1], Y=orig_point[0])
@@ -332,7 +397,7 @@ def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: in
     routes = generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes)
     route_feature_dicts, route_texts = [], []
     for route in routes:
-        feat = compute_route_features(G, G_proj, parks_union, route)
+        feat = compute_route_features(G, G_proj, parks_union, major_roads_union, route)
         route_feature_dicts.append(feat)
         route_texts.append(feat["summary"])
     return route_feature_dicts, route_texts

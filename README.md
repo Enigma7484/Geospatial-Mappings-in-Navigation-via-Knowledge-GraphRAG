@@ -13,7 +13,7 @@ This is not a clean per-user trajectory product yet. Public OSM GPS traces are t
 - Approximate map matching from public trackpoints to OSM routes.
 - Dynamic profile scoring from earlier pseudo-history records.
 - Route-candidate baseline evaluation with ranking and path-similarity metrics.
-- ACM paper scaffold and research documentation.
+- ACM paper draft and research documentation.
 
 GeoLife scripts still exist in `scripts/` as legacy experiments, but they are **not the active research pipeline**.
 
@@ -52,15 +52,20 @@ docs/
   SYSTEM_OVERVIEW.md
   BACKGROUND_FLOW.md
   METRICS.md
+  RELATED_WORK_TABLE.md
   BASELINE_SELECTION_STUDY.md
   EXPERIMENTAL_COMPARISON_STUDY.md
+  THRESHOLD_SENSITIVITY_STUDY.md
+  PUBLISHABLE_BENCHMARK_PLAN.md
+  RESEARCH_GAP_AND_NOVELTY.md
   framework_diagram.mmd
   flowchart_background.md
 
 paper/
-  main.tex                        ACM paper scaffold
-  sections/                       Draft paper sections
-  references.bib                  Bibliography scaffold
+  main.tex                        ACM paper entrypoint
+  main.pdf                        Compiled paper PDF
+  sections/                       Paper sections
+  references.bib                  Bibliography
 ```
 
 ## Setup
@@ -213,26 +218,30 @@ The current reconstruction-quality improvement is simplified GPS anchoring befor
 
 Use these documents as the research navigation map:
 
-| Document | What it represents |
-|---|---|
-| [docs/SYSTEM_OVERVIEW.md](docs/SYSTEM_OVERVIEW.md) | Codebase audit. Explains what each app, script, data file, and major module does. Start here when re-orienting to the repository. |
-| [docs/BACKGROUND_FLOW.md](docs/BACKGROUND_FLOW.md) | Step-by-step background pipeline: OSM trace probe, segmentation, map matching, feature extraction, profile construction, ranking, and evaluation. |
-| [docs/METRICS.md](docs/METRICS.md) | Definitions of reconstruction and ranking metrics, including timestamp coverage, useful segment rate, GPS-to-route distance, route-distance ratio, Hit@K, MRR, and NDCG. |
-| [docs/RELATED_WORK_TABLE.md](docs/RELATED_WORK_TABLE.md) | Compact related-work comparison table for the initially selected papers. Useful for paper-writing and professor check-ins. |
-| [docs/BASELINE_SELECTION_STUDY.md](docs/BASELINE_SELECTION_STUDY.md) | Broader baseline-selection study. Compares candidate papers by task, dataset availability, code availability, metrics, and whether direct comparison is valid. |
-| [docs/EXPERIMENTAL_COMPARISON_STUDY.md](docs/EXPERIMENTAL_COMPARISON_STUDY.md) | Current experiment report. Summarizes route-candidate baseline results, path metrics, reconstruction diagnostics, and honest interpretation. |
-| [docs/THRESHOLD_SENSITIVITY_STUDY.md](docs/THRESHOLD_SENSITIVITY_STUDY.md) | Sensitivity study for segmentation/filtering thresholds. Shows the OSM pipeline remains exploratory-usable but still fails strict route-distance-ratio checks. |
-| [docs/PUBLISHABLE_BENCHMARK_PLAN.md](docs/PUBLISHABLE_BENCHMARK_PLAN.md) | Roadmap for the professor's publication goal: same-data public benchmark, recognized metrics, credible baselines, and conditions required before claiming we beat prior work. |
-| [docs/RESEARCH_GAP_AND_NOVELTY.md](docs/RESEARCH_GAP_AND_NOVELTY.md) | Novelty memo: what prior work does, what this system does, the gap, the defensible baseline story, and what must improve before submission. |
-| [docs/framework_diagram.mmd](docs/framework_diagram.mmd) | Mermaid source for the framework diagram: OSM public GPS trackpoints through ranking and evaluation. |
-| [docs/flowchart_background.md](docs/flowchart_background.md) | Plain-language explanation of each box in the Mermaid framework diagram. |
-| [docs/DEPLOYMENT_RESOURCE_NOTES.md](docs/DEPLOYMENT_RESOURCE_NOTES.md) | Deployment/resource notes for running the project in constrained environments. |
+| Document | Path | What it represents |
+|---|---|---|
+| [System overview](docs/SYSTEM_OVERVIEW.md) | `docs/SYSTEM_OVERVIEW.md` | Codebase audit. Explains what each app, script, data file, and major module does. Start here when re-orienting to the repository. |
+| [Background flow](docs/BACKGROUND_FLOW.md) | `docs/BACKGROUND_FLOW.md` | Step-by-step background pipeline: OSM trace probe, segmentation, map matching, feature extraction, profile construction, ranking, and evaluation. |
+| [Metrics](docs/METRICS.md) | `docs/METRICS.md` | Definitions of reconstruction and ranking metrics, including timestamp coverage, useful segment rate, GPS-to-route distance, route-distance ratio, Hit@K, MRR, and NDCG. |
+| [Related work table](docs/RELATED_WORK_TABLE.md) | `docs/RELATED_WORK_TABLE.md` | Compact related-work comparison table for the initially selected papers. Useful for paper-writing and professor check-ins. |
+| [Baseline selection study](docs/BASELINE_SELECTION_STUDY.md) | `docs/BASELINE_SELECTION_STUDY.md` | Broader baseline-selection study. Compares candidate papers by task, dataset availability, code availability, metrics, and whether direct comparison is valid. |
+| [Experimental comparison study](docs/EXPERIMENTAL_COMPARISON_STUDY.md) | `docs/EXPERIMENTAL_COMPARISON_STUDY.md` | Current experiment report. Summarizes route-candidate baseline results, path metrics, reconstruction diagnostics, and honest interpretation. |
+| [Threshold sensitivity study](docs/THRESHOLD_SENSITIVITY_STUDY.md) | `docs/THRESHOLD_SENSITIVITY_STUDY.md` | Sensitivity study for segmentation/filtering thresholds. Shows the OSM pipeline remains exploratory-usable but still fails strict route-distance-ratio checks. |
+| [Publishable benchmark plan](docs/PUBLISHABLE_BENCHMARK_PLAN.md) | `docs/PUBLISHABLE_BENCHMARK_PLAN.md` | Roadmap for the professor's publication goal: same-data public benchmark, recognized metrics, credible baselines, and conditions required before claiming we beat prior work. |
+| [Research gap and novelty](docs/RESEARCH_GAP_AND_NOVELTY.md) | `docs/RESEARCH_GAP_AND_NOVELTY.md` | Novelty memo: what prior work does, what this system does, the gap, the defensible baseline story, and what must improve before submission. |
+| [Framework diagram source](docs/framework_diagram.mmd) | `docs/framework_diagram.mmd` | Mermaid source for the framework diagram: OSM public GPS trackpoints through ranking and evaluation. |
+| [Flowchart background](docs/flowchart_background.md) | `docs/flowchart_background.md` | Plain-language explanation of each box in the Mermaid framework diagram. |
 
 There are also older `.docx` and `.pdf` files in `docs/` from earlier writeups and presentations. Treat the Markdown files above as the current source of truth unless you intentionally update those artifacts.
 
 ## Paper Draft
 
-The ACM LaTeX scaffold lives in `paper/`.
+The ACM LaTeX paper lives in `paper/`.
+
+- [Compiled paper PDF](paper/main.pdf)
+- [LaTeX entrypoint](paper/main.tex)
+- [Paper README](paper/README.md)
+- [Bibliography](paper/references.bib)
 
 ```powershell
 cd paper

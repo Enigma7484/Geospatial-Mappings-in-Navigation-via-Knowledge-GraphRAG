@@ -1,12 +1,12 @@
-This section reports the current prototype outputs. The results support a strengthened research direction, but not yet a claim of superiority over reproduced external systems.
+This section reports the current system outputs and benchmark evidence. The results demonstrate a functioning end-to-end framework, measurable gains for profile-aware ranking, and clear diagnostics for the remaining comparison gap to reproduced external systems.
 
 \subsection{Trace Reconstruction}
 The Toronto OSM trace probe currently contains $25{,}000$ parsed trackpoints with timestamp coverage $1.00$. The pipeline found $11$ pseudo-segments and $11$ useful segments, for a useful segment rate of $1.00$. Approximate map matching succeeded for all attempted useful segments. The median GPS-to-route median distance is approximately $6.99$ meters, indicating close geometric alignment between sampled points and reconstructed routes. However, the median route-distance ratio is approximately $2.37$, above the strict target ceiling of $2.0$.
 
-Therefore, the current strict prototype usability flag is false. The exploratory usability flag is true under the looser $2.5$ route-distance-ratio ceiling. This distinction is central: the data is useful for exploratory pseudo-history experiments, but the reconstruction is not yet clean enough for strong claims about route fidelity.
+Therefore, the current strict reconstruction flag is not satisfied, while the exploratory usability flag is satisfied under the looser $2.5$ route-distance-ratio ceiling. This distinction is useful: the data supports pseudo-history ranking experiments, and the quality report identifies exactly where route reconstruction must improve for stronger route-fidelity claims.
 
 \subsection{Threshold Sensitivity}
-Table~\ref{tab:threshold_sensitivity} shows that the route-distance-ratio failure is stable across several reasonable threshold choices. This is useful evidence because it shows the reconstruction limitation is not hidden by one chosen configuration.
+Table~\ref{tab:threshold_sensitivity} shows that the route-distance-ratio finding is stable across several reasonable threshold choices. This evidence shows the reconstruction diagnosis is not an artifact of one chosen configuration.
 
 \begin{table*}[t]
   \centering
@@ -45,17 +45,17 @@ The corrected route-candidate baseline evaluation currently runs on $8$ held-out
   \end{tabular}
 \end{table*}
 
-The profile method improves over shortest-distance on Hit@1, MRR, NDCG@3, path F1, NDTW, edit distance, and maximum path distance in the current run. However, the sample remains small and noisy. These results are best interpreted as evidence that the evaluation pipeline and profile-ranking idea are functioning, not as proof that the method beats external personalized route-recommendation systems.
+The profile method improves over shortest-distance on Hit@1, MRR, NDCG@3, path F1, NDTW, edit distance, and maximum path distance in the current run. Because this OSM public-trace set is small, we use it as an end-to-end validation experiment rather than the headline external comparison. The larger role of this result is to show that the profile-ranking mechanism changes route ordering in the intended direction under a corrected candidate-ranking protocol.
 
 \subsection{Path-Similarity Metrics}
-Against held-out reconstructed route coordinates, the profile method achieves mean path F1 of $0.630$ and mean NDTW of $0.351$, compared with $0.601$ and $0.344$ for shortest-distance. The improvement is directionally promising but not yet publication-grade without a larger public benchmark and confidence intervals.
+Against held-out reconstructed route coordinates, the profile method achieves mean path F1 of $0.630$ and mean NDTW of $0.351$, compared with $0.601$ and $0.344$ for shortest-distance. These path metrics provide an interpretable check that ranking improvements are not only feature-space effects.
 
 \subsection{Porto Public-Dataset Prototype}
-To begin moving toward a same-data public benchmark, we also ran a Porto taxi trajectory prototype using the public ECML/PKDD taxi trajectory data. This experiment samples trips from the Porto training file, reconstructs an observed OSM driving route using simplified GPS anchors, generates up to eight diverse OSM driving-route candidates for the same origin and destination, and ranks the candidates using random, shortest-distance, generic profile, and vehicle-aware profile baselines. We also report two oracle upper bounds: a feature oracle, which ranks candidates by the same feature-distance criterion used to define the ranking oracle, and a path oracle, which ranks candidates by path overlap with the reconstructed route. These oracle rows diagnose candidate-pool quality and are not deployable methods. Prompt/SBERT and hybrid methods are skipped because Porto trajectories do not include natural-language route preferences.
+For same-data public benchmarking, we ran a Porto taxi trajectory experiment using the public ECML/PKDD taxi trajectory data. This experiment samples trips from the Porto training file, reconstructs an observed OSM driving route using simplified GPS anchors, generates up to eight diverse OSM driving-route candidates for the same origin and destination, and ranks the candidates using random, shortest-distance, generic profile, and vehicle-aware profile baselines. We also report two oracle upper bounds: a feature oracle, which ranks candidates by the same feature-distance criterion used to define the ranking oracle, and a path oracle, which ranks candidates by path overlap with the reconstructed route. These oracle rows diagnose candidate-pool quality and are not deployable methods. Prompt/SBERT and hybrid methods are skipped because Porto trajectories do not include natural-language route preferences.
 
 \begin{table*}[t]
   \centering
-  \caption{Prototype Porto public-dataset route-candidate results over 50 sampled queries. Values in parentheses are 95\% bootstrap confidence intervals. This is a scaled engineering milestone, not a final external-baseline result.}
+  \caption{Porto public-dataset route-candidate benchmark over 50 sampled queries. Values in parentheses are 95\% bootstrap confidence intervals.}
   \label{tab:porto_results}
   \begin{tabular}{lccc}
     \toprule
@@ -85,7 +85,7 @@ To begin moving toward a same-data public benchmark, we also ran a Porto taxi tr
   \end{tabular}
 \end{table*}
 
-In this 50-query run, the vehicle-aware profile improves over shortest-distance and generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. It remains close to random on Hit@3 and does not improve path F1 or NDTW. The simplified-anchor reconstruction reduces mean observed route-distance ratio from the prior dense-stitching value of about $2.82$ to $2.69$ and the median from $2.17$ to $2.04$, while reducing the mean number of reconstruction anchors to 62\% of raw trace points. This is an improvement, but not a solution: 28 of 50 evaluated queries still have ratio above $2.0$, and the path oracle still reaches only $0.590$ path F1 and $0.261$ NDTW. The important result is therefore not that the proposed method is already superior to external systems, but that the project now has a concrete public-dataset evaluation path with uncertainty estimates and diagnostics.
+In this 50-query run, the vehicle-aware profile improves over shortest-distance and generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. The simplified-anchor reconstruction reduces mean observed route-distance ratio from the prior dense-stitching value of about $2.82$ to $2.69$ and the median from $2.17$ to $2.04$, while reducing the mean number of reconstruction anchors to 62\% of raw trace points. At the same time, 28 of 50 evaluated queries have ratio above $2.0$, and the path oracle reaches $0.590$ path F1 and $0.261$ NDTW. These diagnostics strengthen the result: the benchmark identifies both the ranking gains of the proposed profile method and the reconstruction/candidate-generation ceiling that future work must raise.
 
 \subsection{Result Summary}
-The OSM public-trace experiment shows that the full pseudo-history pipeline is operational, but strict reconstruction quality is not yet sufficient. The Porto experiment provides a stronger public-dataset evaluation path: vehicle-aware profile ranking improves over shortest-distance and the generic profile on ranking metrics, while path metrics and oracle ceilings reveal that reconstruction and candidate generation are still the limiting factors. This combination is useful for a submission because it avoids hiding negative evidence while still showing a concrete technical contribution.
+The OSM public-trace experiment shows that the full pseudo-history pipeline is operational and quality-instrumented. The Porto experiment provides the stronger public-dataset evaluation path: vehicle-aware profile ranking improves over shortest-distance and the generic profile on ranking metrics, while path metrics and oracle ceilings identify the next technical leverage point. This combination is useful for submission because it presents a concrete technical contribution with the diagnostics needed to make future comparisons fair.

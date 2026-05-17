@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.5.9)  13 MAY 2026 19:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.5.9)  14 MAY 2026 19:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1039,12 +1039,6 @@ LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/it' will be
 (Font)              scaled to size 8.0pt on input line 56.
 
 (sections/introduction.tex
-Overfull \hbox (1.26834pt too wide) in paragraph at lines 3--4
-\T1/LinuxLibertineT-TLF/m/n/9 (-20) OSM-derived his-tor-i-cal move-ment sig-nal
-s sup-port preference-aware
- []
-
-
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
@@ -1057,13 +1051,7 @@ tcsq.enc}
 {C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/libertine/lbtn_nh
 77jq.enc}{C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/libertin
 e/lbtn_naooyc.enc}{C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/enc/dvips
-/libertine/lbtn_7grukw.enc}])
-Overfull \hbox (4.20828pt too wide) in paragraph at lines 18--60
-\T1/LinuxLibertineT-TLF/m/n/9 (-20) personalized base-lines, and early public-d
-ataset re-sults show promise,
- []
-
-(sections/related_work.tex
+/libertine/lbtn_7grukw.enc}]) (sections/related_work.tex
 Underfull \hbox (badness 10000) in paragraph at lines 23--23
 []\T1/LinuxLibertineT-TLF/m/n/9 (+20) Historical nav-i-ga-tion
  []
@@ -1190,10 +1178,7 @@ LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/n' will be
 (Font)              scaled to size 7.0pt on input line 27.
  [2.2{C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/libertine/lb
 tn_oexx6f.enc}]) (sections/methodology.tex
-Underfull \vbox (badness 4205) has occurred while \output is active []
-
- [3.3])
-(sections/evaluation.tex [4.4]
+[3.3]) (sections/evaluation.tex [4.4]
 Overfull \hbox (5.8148pt too wide) in paragraph at lines 24--25
 \T1/LinuxLibertineT-TLF/m/n/9 (-20) rows are used only to di-ag-nose candidate-
 pool qual-ity. Prompt/SBERT
@@ -1206,30 +1191,28 @@ t-overlap pre-ci-sion/recall/F1,
  []
 
 ) (sections/results.tex
-Underfull \vbox (badness 3049) has occurred while \output is active []
-
-
 Overfull \hbox (1.82332pt too wide) in paragraph at lines 51--52
 \T1/LinuxLibertineT-TLF/m/n/9 (-20) Against held-out re-con-structed route co-o
 r-di-nates, the pro-file method
  []
 
 
-Underfull \vbox (badness 2150) has occurred while \output is active []
-
- [5.5]
 Overfull \hbox (12.60869pt too wide) in paragraph at lines 88--89
 \T1/LinuxLibertineT-TLF/m/n/9 (-20) shortest-distance and generic pro-file on H
 it@1, Hit@3, MRR, NDCG@3,
  []
 
-) (sections/discussion.tex
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [6.6])
+[5.5])
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
+(sections/discussion.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [6.6]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+)
 (sections/reproducibility.tex
 LaTeX Font Info:    Trying to load font information for T1+zi4 on input line 3.
 
@@ -1244,14 +1227,11 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 )
-(sections/conclusion.tex [7.7{C:/Users/enigm/AppData/Local/Programs/MiKTeX/font
-s/enc/dvips/inconsolata/i4-t1-4.enc}])
-Overfull \hbox (3.63919pt too wide) in paragraph at lines 3--84
-\T1/LinuxLibertineT-TLF/m/n/9 (-20) public-trace set-ting, the pipeline pro-duc
-es us-able ex-ploratory pseudo-
- []
+(sections/conclusion.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-(main.bbl)
+ [7.7{C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/inconsolata/
+i4-t1-4.enc}]) (main.bbl)
 (C:\Users\enigm\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\se-pdfdoc.d
 ef
 File: se-pdfdoc.def 2019/11/29 v1.12 stringenc: PDFDocEncoding
@@ -1267,13 +1247,13 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 496D4B3FEB81E06240BAF3B6ACAECFE4;6528.
  ) 
 Here is how much of TeX's memory you used:
- 21338 strings out of 467871
- 350797 string characters out of 5418377
- 847534 words of memory out of 5000000
+ 21336 strings out of 467871
+ 350749 string characters out of 5418377
+ 847485 words of memory out of 5000000
  49185 multiletter control sequences out of 15000+600000
- 776475 words of font info for 364 fonts, out of 8000000 for 9000
+ 776259 words of font info for 363 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
- 90i,16n,131p,1646b,700s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,16n,131p,1581b,698s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/type1/public/inconsolata/
 Inconsolata-zi4r.pfb><C:/Users/enigm/AppData/Local/Programs/MiKTeX/fonts/type1/
 public/newtx/LibertineMathMI.pfb><C:/Users/enigm/AppData/Local/Programs/MiKTeX/
@@ -1288,7 +1268,7 @@ eX/fonts/type1/public/libertine/LinLibertineTI.pfb><C:/Users/enigm/AppData/Loca
 l/Programs/MiKTeX/fonts/type1/public/newtx/txexs.pfb><C:/Users/enigm/AppData/Lo
 cal/Programs/MiKTeX/fonts/type1/public/newtx/txmiaX.pfb><C:/Users/enigm/AppData
 /Local/Programs/MiKTeX/fonts/type1/public/newtx/txsys.pfb>
-Output written on main.pdf (8 pages, 495129 bytes).
+Output written on main.pdf (8 pages, 494469 bytes).
 PDF statistics:
  343 PDF objects out of 1000 (max. 8388607)
  73 named destinations out of 1000 (max. 500000)

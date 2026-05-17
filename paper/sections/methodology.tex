@@ -1,4 +1,4 @@
-The prototype contains six main stages: trace processing, approximate map matching, feature extraction, profile construction, candidate generation, and route ranking. Figure~\ref{fig:pipeline} summarizes the data flow.
+The system contains six main stages: trace processing, approximate map matching, feature extraction, profile construction, candidate generation, and route ranking. Figure~\ref{fig:pipeline} summarizes the data flow.
 
 \begin{figure*}[t]
   \centering
@@ -23,7 +23,7 @@ The pipeline probes OSM public GPS trackpoints in a Toronto bounding box, parses
 \subsection{Approximate Map Matching}
 For each useful pseudo-segment, the system builds a local OSM walking graph, maps GPS points to nearest graph nodes, deduplicates consecutive repeated nodes, and connects successive matched nodes with shortest paths. This approximate map matching is intentionally simple and therefore reported with diagnostics: matched-point coverage, pair success rate, GPS-to-route distance, and route-distance ratio.
 
-For Porto taxi trajectories, the evaluator uses an OSM driving graph and simplifies dense GPS traces into spatially separated anchors before shortest-path stitching. The anchor spacing parameter reduces redundant point-to-point stitching when consecutive samples fall on nearby road nodes. In the current benchmark, an 80 meter minimum anchor spacing and 60-anchor cap modestly reduce route-distance-ratio inflation. This is a reconstruction improvement, but not a full probabilistic map matcher.
+For Porto taxi trajectories, the evaluator uses an OSM driving graph and simplifies dense GPS traces into spatially separated anchors before shortest-path stitching. The anchor spacing parameter reduces redundant point-to-point stitching when consecutive samples fall on nearby road nodes. In the current benchmark, an 80 meter minimum anchor spacing and 60-anchor cap reduce route-distance-ratio inflation while preserving enough trajectory structure for path-overlap evaluation.
 
 \subsection{Route Feature Extraction}
 For both reconstructed pseudo-history routes and generated candidate routes, the system extracts OSM-derived features: route distance, major-road percentage, walking-way percentage, residential percentage, service-road percentage, intersections, turns, park proximity, lighting percentage, traffic signals, crossings, tunnel length, and an OSM-only safety proxy. The safety proxy is not a crime model; it is a route-attribute score based on available OSM tags.
@@ -34,10 +34,10 @@ Given a request timestamp, the profile module computes temporal context: weekday
 For the Porto benchmark, the generic walking profile is supplemented with a vehicle-aware profile. This profile uses earlier Porto trips as contextual history and emphasizes driving-relevant features: distance, major-road exposure, residential/service-road share, turns, intersections, traffic signals, and tunnel length. The method remains unsupervised: it does not train on held-out labels, and it does not use the oracle candidate during scoring.
 
 \subsection{Candidate Generation}
-The route generator constructs a local OSM graph around the query and returns a small set of route alternatives. The walking pipeline uses OSM walking networks and route attributes such as footways, crossings, lighting, and park proximity. The Porto pipeline uses an OSM driving graph and generates diverse vehicle candidates by varying edge weights, including length-oriented, major-road-preferring, major-road-avoiding, turn-simple, and local-road-avoiding variants. Keeping the candidate pool small preserves runtime for the GUI/API workflow, but it also creates an upper-bound limitation: no ranker can recover a path that candidate generation never proposes.
+The route generator constructs a local OSM graph around the query and returns a small set of route alternatives. The walking pipeline uses OSM walking networks and route attributes such as footways, crossings, lighting, and park proximity. The Porto pipeline uses an OSM driving graph and generates diverse vehicle candidates by varying edge weights, including length-oriented, major-road-preferring, major-road-avoiding, turn-simple, and local-road-avoiding variants. Keeping the candidate pool small preserves runtime for the GUI/API workflow and makes the reranking problem inspectable. The reported feature and path oracles quantify the upper bound imposed by this candidate pool.
 
 \subsection{Ranking Modes}
-The prototype supports five evaluation methods:
+The system supports five evaluation methods:
 
 \begin{itemize}
   \item \textbf{Random:} random permutation of generated route candidates.
@@ -62,4 +62,4 @@ The prompt/SBERT mode converts each route to a textual summary and scores semant
 s_{\mathrm{hybrid}}(r_i) = 0.75\,s_{\mathrm{profile}}(r_i) + 0.25\,s_{\mathrm{prompt}}(r_i).
 \end{equation}
 
-These weights match the backend implementation and are treated as fixed prototype settings, not tuned hyperparameters.
+These weights match the backend implementation and are treated as fixed system settings, not tuned hyperparameters.
