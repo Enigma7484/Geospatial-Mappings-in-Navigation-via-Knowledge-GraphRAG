@@ -58,7 +58,7 @@ Until then, the correct wording is:
 
 Not:
 
-> We beat NASR or User Habits.
+> We directly outperform NASR or the User Habits system.
 
 ## Proposed Publication Roadmap
 
@@ -106,12 +106,12 @@ Current implementation status:
 - Outputs:
   - `data/porto_candidate_baseline_comparison.json`
   - `data/porto_candidate_baseline_comparison.csv`
-- If the Porto CSV is missing, the script writes a placeholder report with `status = missing_dataset`.
+- If the Porto CSV is missing, the script writes a status report with `status = missing_dataset`.
 - The first implemented Porto baselines are random, shortest-distance, and profile ranking.
 - The current Porto evaluator also reports `oracle_feature_upper_bound` and `oracle_path_upper_bound` rows. These are upper bounds for the generated candidate pool, not deployable methods.
-- A vehicle-aware unsupervised profile baseline has been added. It uses contextual historical Porto features but emphasizes driving-relevant signals rather than walking signals.
+- A trajectory-derived vehicle profile baseline has been added. It uses contextual historical Porto features but emphasizes driving-relevant signals rather than walking signals or stated human preferences.
 - Prompt/SBERT and hybrid are explicitly skipped on Porto until preference text exists and is labeled as synthetic or collected.
-- A scaled prototype run has been completed on 50 sampled Porto queries with bootstrap confidence intervals. This is real public-dataset output, but it is not yet large enough or baseline-complete enough for a paper claim.
+- A 100-query Porto run has been completed with bootstrap confidence intervals, adaptive anchor reconstruction, a trajectory-derived vehicle profile, and an internal learned feature-ranker baseline. This is real public-dataset output, but it is not a direct NASR comparison until the official external baseline is reproduced under matched data/splits.
 
 Run command:
 
@@ -125,24 +125,25 @@ Prototype-sized run after downloading Porto:
 python scripts\evaluate_porto_candidate_baselines.py --max-tests 10 --max-rows-to-scan 5000 --sample-stride 100 --k-routes 5 --dist-meters 2500
 ```
 
-Current 50-query run:
+Current 100-query run:
 
 ```powershell
-python scripts\evaluate_porto_candidate_baselines.py --max-tests 50 --max-rows-to-scan 12000 --sample-stride 50 --k-routes 8 --dist-meters 2500 --bootstrap-samples 1000 --min-anchor-spacing-m 80 --max-anchors 60
+python scripts\evaluate_porto_candidate_baselines.py --max-tests 100 --max-rows-to-scan 30000 --sample-stride 20 --k-routes 10 --dist-meters 2500 --bootstrap-samples 1000 --min-anchor-spacing-m 120 --max-anchors 50 --shared-graph-radius-m 8000
 ```
 
 Larger benchmark runs should increase `--max-tests`, reduce `--sample-stride`, and record runtime/skipped-query diagnostics.
 
-Current 50-query Porto prototype result:
+Current 100-query Porto benchmark result:
 
 | Method | Hit@1 | Hit@3 | MRR | NDCG@3 | Mean feature distance | Path F1 | NDTW |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Oracle feature upper bound | 1.000 | 1.000 | 1.000 | 1.000 | 2.104 | 0.541 | 0.236 |
-| Oracle path upper bound | 1.000 | 1.000 | 1.000 | 1.000 | 2.307 | 0.590 | 0.261 |
-| Random | 0.180 | 0.620 | 0.441 | 0.605 | 2.317 | 0.514 | 0.225 |
-| Shortest-distance | 0.100 | 0.380 | 0.310 | 0.509 | 2.385 | 0.515 | 0.215 |
-| Profile | 0.120 | 0.400 | 0.342 | 0.517 | 2.374 | 0.451 | 0.169 |
-| Vehicle profile | 0.260 | 0.600 | 0.478 | 0.732 | 2.226 | 0.501 | 0.196 |
+| Oracle feature upper bound | 1.000 | 1.000 | 1.000 | 0.980 | 1.378 | 0.575 | 0.367 |
+| Oracle path upper bound | 1.000 | 1.000 | 1.000 | 1.000 | 1.569 | 0.658 | 0.427 |
+| Random | 0.120 | 0.330 | 0.306 | 0.536 | 1.858 | 0.483 | 0.257 |
+| Shortest-distance | 0.120 | 0.290 | 0.300 | 0.545 | 1.819 | 0.512 | 0.290 |
+| Profile | 0.100 | 0.210 | 0.264 | 0.445 | 1.977 | 0.445 | 0.215 |
+| Traj.-vehicle profile | 0.230 | 0.430 | 0.408 | 0.615 | 1.819 | 0.472 | 0.240 |
+| Learned feature ranker | 0.216 | 0.454 | 0.401 | 0.597 | 1.725 | 0.477 | 0.269 |
 | Prompt/SBERT | skipped | skipped | skipped | skipped | skipped | skipped | skipped |
 | Hybrid | skipped | skipped | skipped | skipped | skipped | skipped | skipped |
 
@@ -150,19 +151,19 @@ Selected 95% bootstrap confidence intervals:
 
 | Method | Hit@1 CI | Hit@3 CI | MRR CI | NDCG@3 CI | Path F1 CI |
 |---|---:|---:|---:|---:|---:|
-| Random | [0.080, 0.281] | [0.480, 0.760] | [0.367, 0.523] | [0.538, 0.674] | [0.442, 0.586] |
-| Shortest-distance | [0.020, 0.200] | [0.240, 0.520] | [0.245, 0.380] | [0.419, 0.604] | [0.445, 0.586] |
-| Profile | [0.040, 0.220] | [0.260, 0.540] | [0.273, 0.417] | [0.419, 0.613] | [0.384, 0.516] |
-| Vehicle profile | [0.140, 0.400] | [0.440, 0.720] | [0.393, 0.569] | [0.649, 0.808] | [0.435, 0.566] |
+| Random | [0.060, 0.180] | [0.240, 0.430] | [0.257, 0.364] | [0.492, 0.581] | [0.426, 0.542] |
+| Shortest-distance | [0.060, 0.190] | [0.200, 0.370] | [0.249, 0.354] | [0.482, 0.607] | [0.450, 0.571] |
+| Profile | [0.050, 0.170] | [0.130, 0.290] | [0.211, 0.319] | [0.383, 0.508] | [0.388, 0.506] |
+| Traj.-vehicle profile | [0.150, 0.320] | [0.330, 0.530] | [0.343, 0.475] | [0.561, 0.672] | [0.415, 0.523] |
+| Learned feature ranker | [0.144, 0.309] | [0.361, 0.557] | [0.331, 0.470] | [0.533, 0.652] | [0.416, 0.540] |
 
 Interpretation:
 
-- The vehicle-aware profile improves over shortest-distance and the generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance in this 50-query run.
-- Random remains close on Hit@3 and path metrics, so this is not yet a decisive superiority result.
-- Diverse vehicle candidate generation improves the path-oracle ceiling relative to the earlier five-candidate setup.
-- The simplified-anchor reconstruction reduces over-stitching modestly: mean observed route-distance ratio falls from about 2.82 to 2.69, median ratio falls from 2.17 to 2.04, and high-ratio cases fall from 29 to 28 of 50 queries.
-- The path oracle still reaches only 0.590 path F1 and 0.261 NDTW. This shows that candidate generation and/or reconstruction quality remains a major bottleneck.
-- This result is useful as an engineering milestone, not as a publishable superiority claim.
+- The trajectory-derived vehicle profile improves over shortest-distance and the generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance in this 100-query run.
+- The learned feature ranker is competitive with the vehicle profile and obtains the best deployable Hit@3 and mean feature distance.
+- Adaptive-anchor reconstruction substantially reduces over-stitching: median observed route-distance ratio is 1.222, mean ratio is 1.574, and 20 of 100 evaluated queries remain above ratio 2.0.
+- The path oracle reaches 0.658 path F1 and 0.427 NDTW, showing an improved but still limited candidate/reconstruction ceiling.
+- Shortest-distance remains strongest among deployable baselines on top-ranked path F1/NDTW, so this is a ranking-metric gain rather than a solved route-recovery result.
 
 ### Stage 3: Submission-Ready Claim
 
@@ -178,14 +179,13 @@ That is a believable conference story because it combines:
 - fair baselines,
 - and a usable product/demo layer.
 
-## Immediate Next Engineering Tasks
+## Remaining Engineering Tasks
 
-1. Increase the Porto benchmark to at least 100 successful queries.
-2. Improve map matching and reduce route-distance-ratio failures.
-3. Generate a more diverse candidate pool so the oracle upper bound improves on path F1/NDTW.
-4. Keep the vehicle-aware profile as the main unsupervised internal method for Porto.
-5. Reproduce or wrap a credible external baseline, preferably NASR official code if feasible.
-6. Update the LaTeX evaluation/results sections with larger Porto public-benchmark results.
+1. Reproduce or wrap a credible external baseline, preferably NASR official code if feasible under matched Porto data/splits.
+2. Improve map matching further so path F1/NDTW improve, not only route-distance ratio.
+3. Scale beyond 100 successful queries after the external-baseline wrapper is available.
+4. Keep the trajectory-derived vehicle profile as the main unsupervised internal method for Porto.
+5. Keep prompt/SBERT separate unless real or clearly collected preference text exists.
 
 ## Source Notes
 

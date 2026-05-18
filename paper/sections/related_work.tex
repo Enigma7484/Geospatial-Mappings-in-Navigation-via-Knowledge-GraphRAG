@@ -12,6 +12,8 @@ Contextual route recommendation datasets and route-choice studies show that orig
 \subsection{Positioning}
 The closest direct future comparison is not the OSM public-trace experiment alone. The defensible comparison path is a same-data public benchmark, most likely Porto, where our candidate reranker and external route-recovery baselines are evaluated with the same path-overlap metrics. Until that reproduction is complete, this paper positions the proposed method as an interpretable, open-data route-ranking framework with transparent diagnostics, rather than as a system that already surpasses learned personalized search methods.
 
+Among the related systems, NASR is the closest reproducible top-tier route-recovery benchmark because it uses origin-destination trajectory recovery and path-overlap metrics; the 2024 user-habit route recommendation paper is the closest conceptual match for profile-based route sorting, but it is not directly comparable without its private navigation logs and route-choice labels.
+
 \begin{table*}[t]
   \centering
   \caption{Baseline alignment. The table separates conceptual relevance from direct comparability so that the evaluation does not force an invalid comparison.}

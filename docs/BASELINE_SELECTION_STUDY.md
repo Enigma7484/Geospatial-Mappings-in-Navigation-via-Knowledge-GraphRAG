@@ -80,7 +80,7 @@ Use:
 
 Avoid:
 
-> We beat NASR / RICK / User Habits.
+> Directly outperforming NASR, RICK, or the User Habits system.
 
 Current strongest claim:
 

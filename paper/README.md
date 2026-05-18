@@ -1,6 +1,6 @@
 # How to Use This LaTeX Draft
 
-This folder contains the ACM-style paper draft.
+This folder contains the ACM-style paper.
 
 ## What the files are
 

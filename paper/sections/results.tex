@@ -26,11 +26,11 @@ Table~\ref{tab:threshold_sensitivity} shows that the route-distance-ratio findin
 \end{table*}
 
 \subsection{Route-Candidate Ranking}
-The corrected route-candidate baseline evaluation currently runs on $8$ held-out pseudo-history queries. Table~\ref{tab:route_candidate_results} reports the current ranking metrics.
+The corrected route-candidate baseline evaluation runs on $8$ held-out pseudo-history queries. Table~\ref{tab:route_candidate_results} reports the ranking metrics.
 
 \begin{table*}[t]
   \centering
-  \caption{Current route-candidate baseline results over eight held-out OSM pseudo-history queries. Prompt/SBERT and hybrid use synthetic preference text and should be interpreted as ablations.}
+  \caption{Route-candidate baseline results over eight held-out OSM pseudo-history queries. Prompt/SBERT and hybrid use synthetic preference text and are reported as ablations.}
   \label{tab:route_candidate_results}
   \begin{tabular}{lccccc}
     \toprule
@@ -50,12 +50,12 @@ The profile method improves over shortest-distance on Hit@1, MRR, NDCG@3, path F
 \subsection{Path-Similarity Metrics}
 Against held-out reconstructed route coordinates, the profile method achieves mean path F1 of $0.630$ and mean NDTW of $0.351$, compared with $0.601$ and $0.344$ for shortest-distance. These path metrics provide an interpretable check that ranking improvements are not only feature-space effects.
 
-\subsection{Porto Public-Dataset Prototype}
-For same-data public benchmarking, we ran a Porto taxi trajectory experiment using the public ECML/PKDD taxi trajectory data. This experiment samples trips from the Porto training file, reconstructs an observed OSM driving route using simplified GPS anchors, generates up to eight diverse OSM driving-route candidates for the same origin and destination, and ranks the candidates using random, shortest-distance, generic profile, and vehicle-aware profile baselines. We also report two oracle upper bounds: a feature oracle, which ranks candidates by the same feature-distance criterion used to define the ranking oracle, and a path oracle, which ranks candidates by path overlap with the reconstructed route. These oracle rows diagnose candidate-pool quality and are not deployable methods. Prompt/SBERT and hybrid methods are skipped because Porto trajectories do not include natural-language route preferences.
+\subsection{Porto Public-Dataset Benchmark}
+For same-data public benchmarking, we ran a Porto taxi trajectory experiment using the public ECML/PKDD taxi trajectory data. This experiment samples trips from the Porto training file, reconstructs an observed OSM driving route using adaptive GPS anchors, generates up to ten diverse OSM driving-route candidates for the same origin and destination, and ranks the candidates using random, shortest-distance, generic profile, trajectory-derived vehicle profile, and learned feature-ranker baselines. The learned ranker starts after enough prior candidate-label examples exist, so it is evaluated on 97 of the 100 successful queries. We also report two oracle upper bounds: a feature oracle, which ranks candidates by the same feature-distance criterion used to define the ranking oracle, and a path oracle, which ranks candidates by path overlap with the reconstructed route. These oracle rows diagnose candidate-pool quality and are not deployable methods. Prompt/SBERT and hybrid methods are skipped because Porto trajectories do not include natural-language route preferences.
 
 \begin{table*}[t]
   \centering
-  \caption{Porto public-dataset route-candidate benchmark over 50 sampled queries. Values in parentheses are 95\% bootstrap confidence intervals.}
+  \caption{Porto public-dataset route-candidate benchmark over 100 successful sampled queries. Values in parentheses are 95\% bootstrap confidence intervals.}
   \label{tab:porto_results}
   \begin{tabular}{lccc}
     \toprule
@@ -63,10 +63,11 @@ For same-data public benchmarking, we ran a Porto taxi trajectory experiment usi
     \midrule
     Feature oracle & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) \\
     Path oracle & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) & 1.000 (1.000, 1.000) \\
-    Random & 0.180 (0.080, 0.281) & 0.620 (0.480, 0.760) & 0.441 (0.367, 0.523) \\
-    Shortest-distance & 0.100 (0.020, 0.200) & 0.380 (0.240, 0.520) & 0.310 (0.245, 0.380) \\
-    Profile & 0.120 (0.040, 0.220) & 0.400 (0.260, 0.540) & 0.342 (0.273, 0.417) \\
-    Vehicle profile & 0.260 (0.140, 0.400) & 0.600 (0.440, 0.720) & 0.478 (0.393, 0.569) \\
+    Random & 0.120 (0.060, 0.180) & 0.330 (0.240, 0.430) & 0.306 (0.257, 0.364) \\
+    Shortest-distance & 0.120 (0.060, 0.190) & 0.290 (0.200, 0.370) & 0.300 (0.249, 0.354) \\
+    Profile & 0.100 (0.050, 0.170) & 0.210 (0.130, 0.290) & 0.264 (0.211, 0.319) \\
+    Traj.-vehicle profile & 0.230 (0.150, 0.320) & 0.430 (0.330, 0.530) & 0.408 (0.343, 0.475) \\
+    Learned feature ranker & 0.216 (0.144, 0.309) & 0.454 (0.361, 0.557) & 0.401 (0.331, 0.470) \\
     \bottomrule
   \end{tabular}
 
@@ -75,17 +76,18 @@ For same-data public benchmarking, we ran a Porto taxi trajectory experiment usi
     \toprule
     Method & NDCG@3 & Mean Dist. & Path F1 & NDTW \\
     \midrule
-    Feature oracle & 1.000 (1.000, 1.000) & 2.104 (1.999, 2.213) & 0.541 (0.466, 0.611) & 0.236 (0.162, 0.320) \\
-    Path oracle & 1.000 (1.000, 1.000) & 2.307 (2.201, 2.418) & 0.590 (0.515, 0.657) & 0.261 (0.184, 0.343) \\
-    Random & 0.605 (0.538, 0.674) & 2.317 (2.204, 2.428) & 0.514 (0.442, 0.586) & 0.225 (0.159, 0.306) \\
-    Shortest-distance & 0.509 (0.419, 0.604) & 2.385 (2.280, 2.480) & 0.515 (0.445, 0.586) & 0.215 (0.139, 0.289) \\
-    Profile & 0.517 (0.419, 0.613) & 2.374 (2.291, 2.459) & 0.451 (0.384, 0.516) & 0.169 (0.110, 0.238) \\
-    Vehicle profile & 0.732 (0.649, 0.808) & 2.226 (2.121, 2.333) & 0.501 (0.435, 0.566) & 0.196 (0.132, 0.271) \\
+    Feature oracle & 0.980 (0.950, 1.000) & 1.378 (1.226, 1.526) & 0.575 (0.506, 0.645) & 0.367 (0.300, 0.439) \\
+    Path oracle & 1.000 (1.000, 1.000) & 1.569 (1.407, 1.722) & 0.658 (0.596, 0.715) & 0.427 (0.356, 0.499) \\
+    Random & 0.536 (0.492, 0.581) & 1.858 (1.735, 1.976) & 0.483 (0.426, 0.542) & 0.257 (0.199, 0.313) \\
+    Shortest-distance & 0.545 (0.482, 0.607) & 1.819 (1.674, 1.951) & 0.512 (0.450, 0.571) & 0.290 (0.229, 0.351) \\
+    Profile & 0.445 (0.383, 0.508) & 1.977 (1.860, 2.077) & 0.445 (0.388, 0.506) & 0.215 (0.162, 0.270) \\
+    Traj.-vehicle profile & 0.615 (0.561, 0.672) & 1.819 (1.700, 1.922) & 0.472 (0.415, 0.523) & 0.240 (0.183, 0.302) \\
+    Learned feature ranker & 0.597 (0.533, 0.652) & 1.725 (1.583, 1.865) & 0.477 (0.416, 0.540) & 0.269 (0.203, 0.339) \\
     \bottomrule
   \end{tabular}
 \end{table*}
 
-In this 50-query run, the vehicle-aware profile improves over shortest-distance and generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. The simplified-anchor reconstruction reduces mean observed route-distance ratio from the prior dense-stitching value of about $2.82$ to $2.69$ and the median from $2.17$ to $2.04$, while reducing the mean number of reconstruction anchors to 62\% of raw trace points. At the same time, 28 of 50 evaluated queries have ratio above $2.0$, and the path oracle reaches $0.590$ path F1 and $0.261$ NDTW. These diagnostics strengthen the result: the benchmark identifies both the ranking gains of the proposed profile method and the reconstruction/candidate-generation ceiling that future work must raise.
+In this 100-query run, the trajectory-derived vehicle profile improves over shortest-distance and the generic profile on Hit@1, Hit@3, MRR, NDCG@3, and mean feature distance. The learned feature ranker, trained only on prior query candidates, is competitive with the vehicle profile and obtains the best deployable Hit@3 and mean feature distance. Adaptive-anchor reconstruction reduces the median observed route-distance ratio to $1.22$ and the mean ratio to $1.57$, with median GPS-to-route distance of $26.84$ meters; 20 of 100 evaluated queries remain above route-distance ratio $2.0$. The path oracle reaches $0.658$ path F1 and $0.427$ NDTW, improving the candidate-pool ceiling relative to the earlier five-candidate setup. At the same time, shortest-distance remains strongest among deployable baselines on top-ranked path F1/NDTW, so the result should be read as a ranking-metric gain with a clearly identified path-quality bottleneck, not as a solved route-recovery result.
 
 \subsection{Result Summary}
-The OSM public-trace experiment shows that the full pseudo-history pipeline is operational and quality-instrumented. The Porto experiment provides the stronger public-dataset evaluation path: vehicle-aware profile ranking improves over shortest-distance and the generic profile on ranking metrics, while path metrics and oracle ceilings identify the next technical leverage point. This combination is useful for submission because it presents a concrete technical contribution with the diagnostics needed to make future comparisons fair.
+The OSM public-trace experiment shows that the full pseudo-history pipeline is operational and quality-instrumented. The Porto experiment provides the stronger public-dataset evaluation path: trajectory-derived vehicle profile ranking improves over shortest-distance and the generic profile on ranking metrics, the learned feature ranker supplies a stronger internal learned baseline, and path metrics/oracle ceilings identify the next technical leverage point. This combination is useful for submission because it presents a concrete technical contribution with the diagnostics needed to make future comparisons fair.

@@ -23,7 +23,7 @@ The pipeline probes OSM public GPS trackpoints in a Toronto bounding box, parses
 \subsection{Approximate Map Matching}
 For each useful pseudo-segment, the system builds a local OSM walking graph, maps GPS points to nearest graph nodes, deduplicates consecutive repeated nodes, and connects successive matched nodes with shortest paths. This approximate map matching is intentionally simple and therefore reported with diagnostics: matched-point coverage, pair success rate, GPS-to-route distance, and route-distance ratio.
 
-For Porto taxi trajectories, the evaluator uses an OSM driving graph and simplifies dense GPS traces into spatially separated anchors before shortest-path stitching. The anchor spacing parameter reduces redundant point-to-point stitching when consecutive samples fall on nearby road nodes. In the current benchmark, an 80 meter minimum anchor spacing and 60-anchor cap reduce route-distance-ratio inflation while preserving enough trajectory structure for path-overlap evaluation.
+For Porto taxi trajectories, the evaluator uses an OSM driving graph and simplifies dense GPS traces into spatially separated anchors before shortest-path stitching. The anchor spacing parameter reduces redundant point-to-point stitching when consecutive samples fall on nearby road nodes. The current benchmark uses adaptive anchor simplification: several deterministic anchor spacings are tried, and the reconstruction with the best route-distance-ratio and GPS-fit tradeoff is selected. The default setting starts from a 120 meter minimum anchor spacing and a 50-anchor cap, which reduces route-distance-ratio inflation while preserving enough trajectory structure for path-overlap evaluation.
 
 \subsection{Route Feature Extraction}
 For both reconstructed pseudo-history routes and generated candidate routes, the system extracts OSM-derived features: route distance, major-road percentage, walking-way percentage, residential percentage, service-road percentage, intersections, turns, park proximity, lighting percentage, traffic signals, crossings, tunnel length, and an OSM-only safety proxy. The safety proxy is not a crime model; it is a route-attribute score based on available OSM tags.
@@ -31,13 +31,13 @@ For both reconstructed pseudo-history routes and generated candidate routes, the
 \subsection{Dynamic Profile Construction}
 Given a request timestamp, the profile module computes temporal context: weekday/weekend, time bucket, season, and rush-hour status. It selects history records with similar context, averages route features, and converts those averages into feature weights. Context rules then adjust weights for rush hour, evening/night, weekend, summer, and winter.
 
-For the Porto benchmark, the generic walking profile is supplemented with a vehicle-aware profile. This profile uses earlier Porto trips as contextual history and emphasizes driving-relevant features: distance, major-road exposure, residential/service-road share, turns, intersections, traffic signals, and tunnel length. The method remains unsupervised: it does not train on held-out labels, and it does not use the oracle candidate during scoring.
+For the Porto benchmark, the generic walking profile is supplemented with a trajectory-derived vehicle profile. This profile uses earlier Porto trips as contextual movement history and emphasizes driving-relevant features: distance, major-road exposure, residential/service-road share, turns, intersections, traffic signals, and tunnel length. The method remains unsupervised: it does not train on held-out labels, it does not assume stated human preferences, and it does not use the oracle candidate during scoring.
 
 \subsection{Candidate Generation}
-The route generator constructs a local OSM graph around the query and returns a small set of route alternatives. The walking pipeline uses OSM walking networks and route attributes such as footways, crossings, lighting, and park proximity. The Porto pipeline uses an OSM driving graph and generates diverse vehicle candidates by varying edge weights, including length-oriented, major-road-preferring, major-road-avoiding, turn-simple, and local-road-avoiding variants. Keeping the candidate pool small preserves runtime for the GUI/API workflow and makes the reranking problem inspectable. The reported feature and path oracles quantify the upper bound imposed by this candidate pool.
+The route generator constructs a local OSM graph around the query and returns a small set of route alternatives. The walking pipeline uses OSM walking networks and route attributes such as footways, crossings, lighting, and park proximity. The Porto pipeline uses a shared OSM driving graph around central Porto and generates up to ten diverse vehicle candidates by interleaving multiple edge-weight variants, including shortest, major-road-preferring, major-road-avoiding, calmer local-road, low-intersection, and balanced driving costs. Keeping the candidate pool small preserves runtime for the GUI/API workflow and makes the reranking problem inspectable. The reported feature and path oracles quantify the upper bound imposed by this candidate pool.
 
 \subsection{Ranking Modes}
-The system supports five evaluation methods:
+The system supports the following evaluation methods:
 
 \begin{itemize}
   \item \textbf{Random:} random permutation of generated route candidates.
@@ -45,9 +45,10 @@ The system supports five evaluation methods:
   \item \textbf{Profile:} candidates scored using dynamic profile weights.
   \item \textbf{Prompt/SBERT:} route summaries ranked by semantic similarity to preference text.
   \item \textbf{Hybrid:} $0.75$ profile score plus $0.25$ prompt/SBERT score, matching the backend.
+  \item \textbf{Learned feature ranker:} a random-forest regressor trained only on earlier query candidates to predict feature distance to the reconstructed reference.
 \end{itemize}
 
-Prompt/SBERT and hybrid modes are skipped when no preference text exists. This is the current case for the OSM pseudo-history records.
+Prompt/SBERT and hybrid modes are skipped when no preference text exists. This is the current case for the Porto public trajectory benchmark.
 
 \subsection{Scoring}
 Profile scoring compares each candidate feature vector with a contextual target profile. For numeric feature $j$, the score rewards closeness between candidate value $x_{ij}$ and target value $\mu_j$ under profile weight $w_j$:

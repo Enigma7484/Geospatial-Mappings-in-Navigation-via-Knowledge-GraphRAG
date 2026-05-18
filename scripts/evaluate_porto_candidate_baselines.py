@@ -64,6 +64,7 @@ BASELINE_ORDER = [
     "shortest_distance",
     "profile",
     "vehicle_profile",
+    "learned_feature_ranker",
     "prompt_sbert",
     "hybrid",
 ]
@@ -262,12 +263,63 @@ def vehicle_profile_scores(route_feature_dicts: List[Dict[str, Any]], profile: D
     return minmax_scores(-penalties)
 
 
+def learned_feature_ranker(
+    route_feature_dicts: List[Dict[str, Any]],
+    training_examples: List[Dict[str, Any]],
+    random_seed: int,
+) -> Tuple[Optional[List[int]], Optional[List[float]], Optional[str]]:
+    """Rank candidates with a small supervised model trained only on earlier queries.
+
+    This is not NASR and is not presented as an external reproduction. It is a
+    conservative learned baseline: prior evaluated query candidates provide
+    feature vectors, and their labels are their observed feature-distance to the
+    held-out reconstructed route. Lower predicted distance ranks higher.
+    """
+    min_examples = 30
+    if len(training_examples) < min_examples:
+        return None, None, f"Need at least {min_examples} prior candidate-label examples."
+    try:
+        from sklearn.ensemble import RandomForestRegressor
+    except Exception as exc:
+        return None, None, f"scikit-learn unavailable: {repr(exc)}"
+
+    X_train = np.vstack([np.asarray(item["features"], dtype=float) for item in training_examples])
+    y_train = np.asarray([float(item["label_feature_distance"]) for item in training_examples], dtype=float)
+    X_test = np.vstack([feature_vec(route) for route in route_feature_dicts])
+    try:
+        model = RandomForestRegressor(
+            n_estimators=120,
+            max_depth=6,
+            min_samples_leaf=3,
+            random_state=random_seed,
+            n_jobs=1,
+        )
+        model.fit(X_train, y_train)
+        predictions = model.predict(X_test)
+    except Exception as exc:
+        return None, None, f"learned ranker failed: {repr(exc)}"
+    ranking = [int(idx) for idx in np.argsort(predictions)]
+    return ranking, [float(x) for x in predictions], None
+
+
 def _series_minmax(values: List[Any]) -> np.ndarray:
     return minmax_scores(np.array([safe_float(v) for v in values], dtype=float))
 
 
 def route_to_coordinates(G: nx.MultiDiGraph, route: List[int]) -> List[List[float]]:
     return [[float(G.nodes[node]["y"]), float(G.nodes[node]["x"])] for node in route]
+
+
+def route_length_km_from_nodes(G: nx.MultiDiGraph, route: List[int]) -> float:
+    total = 0.0
+    for u, v in zip(route[:-1], route[1:]):
+        edge_data = G.get_edge_data(u, v)
+        if isinstance(edge_data, dict):
+            edge = min(edge_data.values(), key=lambda d: d.get("length", float("inf")))
+            total += safe_float(edge.get("length"))
+        elif edge_data is not None:
+            total += safe_float(edge_data.get("length"))
+    return total / 1000.0
 
 
 def parse_porto_polyline(polyline: str) -> List[List[float]]:
@@ -331,6 +383,31 @@ def graph_for_trip(coords: List[List[float]], dist_meters: int) -> nx.MultiDiGra
     return G
 
 
+def graph_for_shared_porto(center_lat: float, center_lon: float, radius_m: int) -> nx.MultiDiGraph:
+    """Build one reusable Porto driving graph for larger benchmark runs."""
+    center = (float(center_lat), float(center_lon))
+    print(f"Building shared Porto drive graph center={center} radius={radius_m}m")
+    G = ox.graph_from_point(center, dist=radius_m, network_type="drive", simplify=True)
+    G = ox.distance.add_edge_lengths(G)
+    try:
+        G = ox.bearing.add_edge_bearings(G)
+    except Exception:
+        try:
+            G = ox.add_edge_bearings(G)
+        except Exception:
+            pass
+    annotate_vehicle_candidate_weights(G)
+    print(f"Shared graph: {len(G.nodes):,} nodes, {len(G.edges):,} edges")
+    return G
+
+
+def trip_within_shared_graph(trip: Dict[str, Any], center: Tuple[float, float], radius_m: int) -> bool:
+    if radius_m <= 0:
+        return True
+    endpoints = [trip["coordinates"][0], trip["coordinates"][-1]]
+    return all(haversine_m([center[0], center[1]], point) <= radius_m * 0.95 for point in endpoints)
+
+
 def annotate_vehicle_candidate_weights(G: nx.MultiDiGraph) -> None:
     """Attach several deterministic driving weights for candidate diversity."""
     for _, v, _, data in G.edges(keys=True, data=True):
@@ -368,11 +445,46 @@ def annotate_vehicle_candidate_weights(G: nx.MultiDiGraph) -> None:
         if hwy in MAJOR_ROADS:
             avoid_local *= 0.90
 
+        fast_major = length
+        if hwy in MAJOR_ROADS:
+            fast_major *= 0.72
+        elif hwy in RESIDENTIAL_ROADS:
+            fast_major *= 1.18
+        elif hwy in SERVICE_ROADS:
+            fast_major *= 1.32
+
+        calm_local = length
+        if hwy in MAJOR_ROADS:
+            calm_local *= 1.35
+        elif hwy in RESIDENTIAL_ROADS:
+            calm_local *= 0.88
+        elif hwy in SERVICE_ROADS:
+            calm_local *= 1.06
+
+        low_intersection = length + max(degree - 2, 0) * 22.0
+        if hwy in MAJOR_ROADS:
+            low_intersection *= 0.94
+        if hwy in SERVICE_ROADS:
+            low_intersection *= 1.16
+
+        balanced = length
+        if hwy in MAJOR_ROADS:
+            balanced *= 0.88
+        elif hwy in RESIDENTIAL_ROADS:
+            balanced *= 1.02
+        elif hwy in SERVICE_ROADS:
+            balanced *= 1.16
+        balanced += max(degree - 3, 0) * 7.0
+
         data["vehicle_length"] = length
         data["vehicle_prefer_major"] = max(1.0, prefer_major)
         data["vehicle_avoid_major"] = max(1.0, avoid_major)
         data["vehicle_simple"] = max(1.0, simple)
         data["vehicle_avoid_local"] = max(1.0, avoid_local)
+        data["vehicle_fast_major"] = max(1.0, fast_major)
+        data["vehicle_calm_local"] = max(1.0, calm_local)
+        data["vehicle_low_intersection"] = max(1.0, low_intersection)
+        data["vehicle_balanced"] = max(1.0, balanced)
 
 
 def simplify_trace_anchors(coords: List[List[float]], min_anchor_spacing_m: float, max_anchors: int) -> List[List[float]]:
@@ -396,7 +508,20 @@ def simplify_trace_anchors(coords: List[List[float]], min_anchor_spacing_m: floa
     return anchors
 
 
-def reconstruct_route(
+def _sample_for_distance(coords: List[List[float]], max_points: int = 80) -> List[List[float]]:
+    if len(coords) <= max_points:
+        return coords
+    indices = np.linspace(0, len(coords) - 1, max_points, dtype=int)
+    return [coords[int(i)] for i in indices]
+
+
+def _median_gps_to_route_m(raw_coords: List[List[float]], route_coords: List[List[float]]) -> float:
+    sample = _sample_for_distance(raw_coords)
+    distances = [min_distance_to_path_m(point, route_coords) for point in sample]
+    return float(np.median(distances)) if distances else float("inf")
+
+
+def _reconstruct_route_once(
     G: nx.MultiDiGraph,
     coords: List[List[float]],
     min_anchor_spacing_m: float,
@@ -448,29 +573,127 @@ def reconstruct_route(
     return (cleaned if len(cleaned) >= 2 else None), diagnostics
 
 
+def reconstruction_trial_settings(min_anchor_spacing_m: float, max_anchors: int) -> List[Tuple[float, int]]:
+    """Try a few increasingly sparse anchor settings to reduce over-stitching."""
+    base_spacing = max(float(min_anchor_spacing_m), 1.0)
+    base_anchors = max(int(max_anchors), 2)
+    raw_settings = [
+        (base_spacing, base_anchors),
+        (max(base_spacing, 120.0), min(base_anchors, 50)),
+        (max(base_spacing * 1.5, 180.0), min(base_anchors, 40)),
+        (max(base_spacing * 2.25, 250.0), min(base_anchors, 30)),
+    ]
+    unique = []
+    seen = set()
+    for spacing, anchors in raw_settings:
+        key = (round(spacing, 3), anchors)
+        if key not in seen:
+            unique.append((spacing, anchors))
+            seen.add(key)
+    return unique
+
+
+def reconstruct_route(
+    G: nx.MultiDiGraph,
+    coords: List[List[float]],
+    min_anchor_spacing_m: float,
+    max_anchors: int,
+) -> Tuple[Optional[List[int]], Dict[str, Any]]:
+    """Reconstruct a Porto trajectory with adaptive anchor simplification.
+
+    Dense GPS-to-node stitching often overbuilds paths by forcing the route
+    through too many noisy points. We run a small set of deterministic anchor
+    simplifications and choose the route with the best ratio/fit tradeoff.
+    """
+    raw_distance_km = max(path_length_km(coords), 0.001)
+    trials = []
+    best_route = None
+    best_score = float("inf")
+    best_diagnostics: Dict[str, Any] = {}
+    for trial_index, (spacing, anchors) in enumerate(reconstruction_trial_settings(min_anchor_spacing_m, max_anchors)):
+        route, diagnostics = _reconstruct_route_once(G, coords, spacing, anchors)
+        diagnostics["trial_index"] = trial_index
+        if route is None:
+            diagnostics["status"] = "failed"
+            trials.append(diagnostics)
+            continue
+        route_coords = route_to_coordinates(G, route)
+        route_distance_km = route_length_km_from_nodes(G, route)
+        ratio = route_distance_km / raw_distance_km
+        median_gps_m = _median_gps_to_route_m(coords, route_coords)
+        success_rate = safe_float(diagnostics.get("anchor_pair_success_rate"), 0.0)
+        score = abs(1.0 - ratio) + max(ratio - 2.0, 0.0) * 1.5 + median_gps_m / 500.0 + max(0.0, 0.8 - success_rate)
+        diagnostics.update({
+            "status": "ran",
+            "route_distance_km": route_distance_km,
+            "raw_trace_distance_km": raw_distance_km,
+            "route_distance_ratio": ratio,
+            "median_gps_to_route_m": median_gps_m,
+            "selection_score": score,
+        })
+        trials.append(diagnostics)
+        if score < best_score:
+            best_score = score
+            best_route = route
+            best_diagnostics = diagnostics
+
+    if best_route is None:
+        return None, {
+            "reconstruction_strategy": "adaptive_anchor_shortest_path",
+            "raw_trace_points": len(coords),
+            "raw_trace_distance_km": raw_distance_km,
+            "trials": trials,
+        }
+    selected = dict(best_diagnostics)
+    selected.update({
+        "reconstruction_strategy": "adaptive_anchor_shortest_path",
+        "selected_trial_index": best_diagnostics.get("trial_index"),
+        "trials": trials,
+    })
+    return best_route, selected
+
+
 def generate_candidates(G: nx.MultiDiGraph, origin: List[float], destination: List[float], k_routes: int) -> List[List[int]]:
     orig = ox.distance.nearest_nodes(G, X=origin[1], Y=origin[0])
     dest = ox.distance.nearest_nodes(G, X=destination[1], Y=destination[0])
-    routes = []
-    weights = ["length", "vehicle_prefer_major", "vehicle_avoid_major", "vehicle_simple", "vehicle_avoid_local"]
-    per_weight_k = max(2, min(k_routes, 4))
+    route_pools = []
+    weights = [
+        "length",
+        "vehicle_prefer_major",
+        "vehicle_fast_major",
+        "vehicle_avoid_major",
+        "vehicle_calm_local",
+        "vehicle_simple",
+        "vehicle_low_intersection",
+        "vehicle_avoid_local",
+        "vehicle_balanced",
+    ]
+    per_weight_k = max(3, min(k_routes, 5))
     for weight in weights:
         try:
-            routes.extend(list(ox.k_shortest_paths(G, orig, dest, k=per_weight_k, weight=weight)))
+            route_pools.append(list(ox.k_shortest_paths(G, orig, dest, k=per_weight_k, weight=weight)))
         except Exception:
             try:
-                routes.append(nx.shortest_path(G, orig, dest, weight=weight))
+                route_pools.append([nx.shortest_path(G, orig, dest, weight=weight)])
             except Exception:
-                continue
-    if not routes:
-        routes = [nx.shortest_path(G, orig, dest, weight="length")]
+                route_pools.append([])
+    routes = []
     unique = []
     seen = set()
-    for route in routes:
-        key = tuple(route)
-        if key not in seen:
-            unique.append(route)
-            seen.add(key)
+    max_pool_len = max((len(pool) for pool in route_pools), default=0)
+    for rank in range(max_pool_len):
+        for pool in route_pools:
+            if rank >= len(pool):
+                continue
+            route = pool[rank]
+            key = tuple(route)
+            if key not in seen:
+                unique.append(route)
+                seen.add(key)
+            if len(unique) >= k_routes:
+                return unique
+    if not unique:
+        unique = [nx.shortest_path(G, orig, dest, weight="length")]
     return unique[:k_routes]
 
 
@@ -547,9 +770,14 @@ def evaluate_porto(
     random_seed: int,
     min_anchor_spacing_m: float,
     max_anchors: int,
+    shared_graph: Optional[nx.MultiDiGraph] = None,
+    shared_graph_proj: Optional[nx.MultiDiGraph] = None,
+    shared_graph_center: Optional[Tuple[float, float]] = None,
+    shared_graph_radius_m: int = 0,
 ) -> Dict[str, Any]:
     usable_records = []
     per_query_results = []
+    learned_training_examples: List[Dict[str, Any]] = []
     skipped = []
 
     for idx, trip in enumerate(trips):
@@ -557,7 +785,15 @@ def evaluate_porto(
             break
         print(f"\nProcessing Porto trip {idx}: {trip['trip_id']}")
         try:
-            G = graph_for_trip(trip["coordinates"], dist_meters)
+            if shared_graph is not None:
+                if shared_graph_center and not trip_within_shared_graph(trip, shared_graph_center, shared_graph_radius_m):
+                    skipped.append({"trip_id": trip["trip_id"], "reason": "outside shared graph radius"})
+                    continue
+                G = shared_graph
+                G_proj = shared_graph_proj if shared_graph_proj is not None else ox.project_graph(G)
+            else:
+                G = graph_for_trip(trip["coordinates"], dist_meters)
+                G_proj = ox.project_graph(G)
             observed_route, reconstruction_diag = reconstruct_route(
                 G,
                 trip["coordinates"],
@@ -567,11 +803,12 @@ def evaluate_porto(
             if observed_route is None:
                 skipped.append({"trip_id": trip["trip_id"], "reason": "map matching failed", **reconstruction_diag})
                 continue
-            observed_features = compute_route_features(G, ox.project_graph(G), None, observed_route)
+            observed_features = compute_route_features(G, G_proj, None, None, observed_route)
             observed_features["raw_trace_distance_km"] = path_length_km(trip["coordinates"])
             observed_features["route_distance_ratio"] = observed_features["distance_km"] / max(
                 observed_features["raw_trace_distance_km"], 0.001
             )
+            observed_features["median_gps_to_route_m"] = reconstruction_diag.get("median_gps_to_route_m")
             record = {
                 "timestamp": trip["timestamp"],
                 "mode": "porto_taxi_public",
@@ -588,7 +825,7 @@ def evaluate_porto(
             if not candidate_routes:
                 skipped.append({"trip_id": trip["trip_id"], "reason": "no generated candidates"})
                 continue
-            candidate_features = [compute_route_features(G, ox.project_graph(G), None, route) for route in candidate_routes]
+            candidate_features = [compute_route_features(G, G_proj, None, None, route) for route in candidate_routes]
             sim = candidate_distances_and_relevances(observed_features, candidate_features)
             oracle_index = sim["oracle_index"]
             feature_distances = sim["feature_distances"]
@@ -603,6 +840,7 @@ def evaluate_porto(
                 "oracle_candidate_index": oracle_index,
                 "path_oracle_candidate_index": path_oracle["oracle_index"],
                 "observed_route_distance_ratio": observed_features["route_distance_ratio"],
+                "observed_median_gps_to_route_m": observed_features.get("median_gps_to_route_m"),
                 "reconstruction": reconstruction_diag,
                 "methods": {},
             }
@@ -681,6 +919,32 @@ def evaluate_porto(
             except Exception as exc:
                 skipped.append({"trip_id": trip["trip_id"], "reason": f"profile failed: {repr(exc)}"})
 
+            learned_ranking, learned_predictions, learned_skip = learned_feature_ranker(
+                candidate_features,
+                learned_training_examples,
+                random_seed=random_seed + idx,
+            )
+            if learned_ranking is not None and learned_predictions is not None:
+                query["methods"]["learned_feature_ranker"] = evaluate_ranking(
+                    "learned_feature_ranker",
+                    learned_ranking,
+                    oracle_index,
+                    relevances,
+                    feature_distances,
+                    candidate_features,
+                    observed_features["coordinates"],
+                    trip,
+                )
+                query["methods"]["learned_feature_ranker"]["predicted_feature_distances"] = learned_predictions
+            elif learned_skip:
+                skipped.append({"trip_id": trip["trip_id"], "reason": f"learned_feature_ranker skipped: {learned_skip}"})
+
+            for candidate, feature_distance in zip(candidate_features, feature_distances):
+                learned_training_examples.append({
+                    "features": feature_vec(candidate).tolist(),
+                    "label_feature_distance": float(feature_distance),
+                })
+
             per_query_results.append(query)
         except Exception as exc:
             skipped.append({"trip_id": trip["trip_id"], "reason": repr(exc)})
@@ -691,7 +955,10 @@ def evaluate_porto(
         "reconstruction_mode": {
             "min_anchor_spacing_m": min_anchor_spacing_m,
             "max_anchors": max_anchors,
+            "strategy": "adaptive_anchor_shortest_path",
         },
+        "graph_mode": "shared_porto_graph" if shared_graph is not None else "per_trip_graph",
+        "learned_training_examples": len(learned_training_examples),
         "per_query_results": per_query_results,
         "skipped": skipped,
     }
@@ -733,6 +1000,7 @@ def summarize_skip_reasons(skipped: List[Dict[str, Any]]) -> List[Dict[str, Any]
 def summarize_query_diagnostics(evaluation: Dict[str, Any]) -> Dict[str, Any]:
     queries = evaluation["per_query_results"]
     ratios = [q.get("observed_route_distance_ratio") for q in queries]
+    gps_medians = [q.get("observed_median_gps_to_route_m") for q in queries]
     candidate_counts = [q.get("candidate_count") for q in queries]
     anchor_points = [q.get("reconstruction", {}).get("anchor_points") for q in queries]
     raw_points = [q.get("reconstruction", {}).get("raw_trace_points") for q in queries]
@@ -750,6 +1018,8 @@ def summarize_query_diagnostics(evaluation: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "mean_observed_route_distance_ratio": safe_mean(ratios, None),
         "median_observed_route_distance_ratio": float(np.median([r for r in ratios if r is not None])) if ratios else None,
+        "mean_observed_median_gps_to_route_m": safe_mean(gps_medians, None),
+        "median_observed_median_gps_to_route_m": float(np.median([r for r in gps_medians if r is not None])) if gps_medians else None,
         "mean_candidate_count": safe_mean(candidate_counts, None),
         "mean_raw_trace_points": safe_mean(raw_points, None),
         "mean_anchor_points": safe_mean(anchor_points, None),
@@ -770,7 +1040,8 @@ def summarize_results(evaluation: Dict[str, Any], bootstrap_samples: int, random
     skipped_reasons = {
         "prompt_sbert": "Porto trajectories do not include natural-language preference text.",
         "hybrid": "Hybrid requires both profile history and natural-language preference text.",
-        "vehicle_profile": "Vehicle profile scoring failed or no successful query results.",
+        "vehicle_profile": "Trajectory-derived vehicle profile scoring failed or no successful query results.",
+        "learned_feature_ranker": "Not enough prior candidate-label examples or scikit-learn unavailable.",
     }
     for method in BASELINE_ORDER:
         results = by_method.get(method, [])
@@ -818,19 +1089,19 @@ def write_csv(rows: List[Dict[str, Any]], path: Path) -> None:
 
 def print_summary(rows: List[Dict[str, Any]]) -> None:
     print("\nPorto Candidate Baseline Comparison")
-    print("=" * 120)
-    print(f"{'method':<18} {'status':<8} {'n':>4} {'Hit@1':>8} {'Hit@3':>8} {'MRR':>8} {'NDCG@3':>8} {'PathF1':>8} {'NDTW':>8}")
-    print("-" * 120)
+    print("=" * 126)
+    print(f"{'method':<24} {'status':<8} {'n':>4} {'Hit@1':>8} {'Hit@3':>8} {'MRR':>8} {'NDCG@3':>8} {'PathF1':>8} {'NDTW':>8}")
+    print("-" * 126)
     for row in rows:
         if row["status"] == "ran":
             print(
-                f"{row['method']:<18} {row['status']:<8} {row['num_queries']:>4} "
+                f"{row['method']:<24} {row['status']:<8} {row['num_queries']:>4} "
                 f"{row['hit_at_1']:>8.3f} {row['hit_at_3']:>8.3f} {row['mrr']:>8.3f} "
                 f"{row['ndcg_at_3']:>8.3f} {row['mean_path_f1']:>8.3f} {row['mean_path_ndtw']:>8.3f}"
             )
         else:
-            print(f"{row['method']:<18} {row['status']:<8} {row['num_queries']:>4}  {row['skip_reason']}")
-    print("=" * 120)
+            print(f"{row['method']:<24} {row['status']:<8} {row['num_queries']:>4}  {row['skip_reason']}")
+    print("=" * 126)
 
 
 def parse_args() -> argparse.Namespace:
@@ -843,25 +1114,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--porto-csv", type=Path, default=DEFAULT_PORTO_CSV)
     parser.add_argument("--json-output", type=Path, default=JSON_OUTPUT_PATH)
     parser.add_argument("--csv-output", type=Path, default=CSV_OUTPUT_PATH)
-    parser.add_argument("--max-rows-to-scan", type=int, default=5000)
-    parser.add_argument("--sample-stride", type=int, default=100)
+    parser.add_argument("--max-rows-to-scan", type=int, default=30000)
+    parser.add_argument("--sample-stride", type=int, default=25)
     parser.add_argument("--min-points", type=int, default=20)
-    parser.add_argument("--max-tests", type=int, default=10)
+    parser.add_argument("--max-tests", type=int, default=100)
     parser.add_argument("--min-history-records", type=int, default=3)
     parser.add_argument("--dist-meters", type=int, default=2500)
-    parser.add_argument("--k-routes", type=int, default=5)
+    parser.add_argument("--k-routes", type=int, default=10)
     parser.add_argument("--random-seed", type=int, default=20260512)
     parser.add_argument("--bootstrap-samples", type=int, default=1000)
     parser.add_argument(
+        "--per-trip-graphs",
+        action="store_true",
+        help="Build a separate OSM driving graph per trip. Slower, but useful if the shared Porto graph misses many trips.",
+    )
+    parser.add_argument("--shared-graph-center-lat", type=float, default=41.1579)
+    parser.add_argument("--shared-graph-center-lon", type=float, default=-8.6291)
+    parser.add_argument("--shared-graph-radius-m", type=int, default=8000)
+    parser.add_argument(
         "--min-anchor-spacing-m",
         type=float,
-        default=0.0,
+        default=120.0,
         help="Minimum spacing between GPS anchors used for reconstruction. 0 keeps all sampled points.",
     )
     parser.add_argument(
         "--max-anchors",
         type=int,
-        default=80,
+        default=50,
         help="Maximum GPS anchors used for reconstruction after spacing simplification.",
     )
     return parser.parse_args()
@@ -891,9 +1170,21 @@ def main() -> None:
         args.json_output.write_text(json.dumps(make_json_safe(output), indent=2), encoding="utf-8")
         write_csv([], args.csv_output)
         print(str(exc))
-        print(f"Saved placeholder JSON: {args.json_output}")
-        print(f"Saved placeholder CSV:  {args.csv_output}")
+        print(f"Saved status JSON: {args.json_output}")
+        print(f"Saved status CSV:  {args.csv_output}")
         return
+
+    shared_graph = None
+    shared_graph_proj = None
+    shared_graph_center = None
+    if not args.per_trip_graphs:
+        shared_graph_center = (args.shared_graph_center_lat, args.shared_graph_center_lon)
+        shared_graph = graph_for_shared_porto(
+            args.shared_graph_center_lat,
+            args.shared_graph_center_lon,
+            args.shared_graph_radius_m,
+        )
+        shared_graph_proj = ox.project_graph(shared_graph)
 
     evaluation = evaluate_porto(
         trips=trips,
@@ -904,6 +1195,10 @@ def main() -> None:
         random_seed=args.random_seed,
         min_anchor_spacing_m=args.min_anchor_spacing_m,
         max_anchors=args.max_anchors,
+        shared_graph=shared_graph,
+        shared_graph_proj=shared_graph_proj,
+        shared_graph_center=shared_graph_center,
+        shared_graph_radius_m=args.shared_graph_radius_m,
     )
     rows = summarize_results(evaluation, args.bootstrap_samples, args.random_seed)
     diagnostics = summarize_query_diagnostics(evaluation)
@@ -917,14 +1212,21 @@ def main() -> None:
             "max_tests": args.max_tests,
             "dist_meters": args.dist_meters,
             "k_routes": args.k_routes,
+            "graph_mode": evaluation.get("graph_mode"),
+            "shared_graph_center": list(shared_graph_center) if shared_graph_center else None,
+            "shared_graph_radius_m": args.shared_graph_radius_m if shared_graph is not None else None,
             "bootstrap_samples": args.bootstrap_samples,
             "min_anchor_spacing_m": args.min_anchor_spacing_m,
             "max_anchors": args.max_anchors,
             "path_match_threshold_m": PATH_MATCH_THRESHOLD_M,
             "note": (
-                "This is a same-public-dataset benchmark scaffold for Porto taxi trajectories. "
+                "This is a same-public-dataset benchmark for Porto taxi trajectories. "
                 "It is closer to NASR-style route recovery than the OSM public trace pseudo-history experiment, "
-                "but it still needs careful split matching and external baseline reproduction before claiming superiority."
+                "but it does not claim NASR reproduction unless the official NASR code is run under matched data/splits."
+            ),
+            "nasr_reproduction_status": (
+                "Not reproduced in this script. The official NASR repository is public, but its preprocessing and "
+                "training format are different from this OSMnx route-candidate evaluator."
             ),
         },
         "summary": rows,
@@ -939,9 +1241,14 @@ def main() -> None:
     print(f"Successful queries: {evaluation['num_queries']}")
     print(
         "Reconstruction anchors: "
-        f"mean_raw={diagnostics.get('mean_raw_trace_points'):.1f} "
-        f"mean_anchor={diagnostics.get('mean_anchor_points'):.1f} "
-        f"mean_ratio={diagnostics.get('mean_anchor_reduction_ratio'):.3f}"
+        f"mean_raw={safe_float(diagnostics.get('mean_raw_trace_points')):.1f} "
+        f"mean_anchor={safe_float(diagnostics.get('mean_anchor_points')):.1f} "
+        f"mean_ratio={safe_float(diagnostics.get('mean_anchor_reduction_ratio')):.3f}"
+    )
+    print(
+        "Observed reconstruction: "
+        f"median_route_ratio={safe_float(diagnostics.get('median_observed_route_distance_ratio')):.3f} "
+        f"median_gps_to_route_m={safe_float(diagnostics.get('median_observed_median_gps_to_route_m')):.2f}"
     )
     print(f"Skipped trips: {len(evaluation['skipped'])}")
     if diagnostics["skip_reason_counts"]:
