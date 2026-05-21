@@ -65,7 +65,19 @@ def rank_routes(payload: RankRoutesRequest):
                 status_code=400,
                 detail="ranking_mode='prompt' or 'hybrid' requires a non-empty 'preference'.",
             )
-        sbert_scores = minmax(rank_route_texts(route_texts, payload.preference))
+        try:
+            sbert_scores = minmax(
+                rank_route_texts(
+                    route_texts,
+                    payload.preference,
+                    route_feature_dicts=route_feature_dicts,
+                )
+            )
+        except Exception as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Prompt ranking failed: {type(exc).__name__}: {exc}",
+            ) from exc
 
     if payload.ranking_mode in {"profile", "hybrid"}:
         if not payload.user_id:
