@@ -1,8 +1,11 @@
+import argparse
 import json
 import math
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from collections import Counter, defaultdict
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 
@@ -124,7 +127,51 @@ def parse_gpx_trackpoints(path: Path) -> List[Dict[str, Any]]:
         ns = root.tag.split("}")[0] + "}"
 
     points = []
+    track_counter = 0
 
+    for track_counter, trk in enumerate(root.iter(f"{ns}trk")):
+        name_el = trk.find(f"{ns}name")
+        url_el = trk.find(f"{ns}url")
+        trace_name = name_el.text.strip() if name_el is not None and name_el.text else None
+        trace_url = url_el.text.strip() if url_el is not None and url_el.text else None
+        osm_user = None
+        osm_trace_id = None
+        if trace_url:
+            match = re.search(r"/user/([^/]+)/traces/(\d+)", trace_url)
+            if match:
+                osm_user = match.group(1)
+                osm_trace_id = match.group(2)
+
+        for seg_index, seg in enumerate(trk.iter(f"{ns}trkseg")):
+            for pt in seg.iter(f"{ns}trkpt"):
+                lat = pt.attrib.get("lat")
+                lon = pt.attrib.get("lon")
+                time_el = pt.find(f"{ns}time")
+
+                if lat is None or lon is None:
+                    continue
+
+                dt = parse_time(time_el.text if time_el is not None else None)
+
+                points.append({
+                    "lat": float(lat),
+                    "lon": float(lon),
+                    "timestamp": dt,
+                    "has_timestamp": dt is not None,
+                    "osm_user": osm_user,
+                    "osm_trace_id": osm_trace_id,
+                    "osm_trace_url": trace_url,
+                    "osm_trace_name": trace_name,
+                    "source_file": path.name,
+                    "track_index": track_counter,
+                    "track_segment_index": seg_index,
+                })
+
+    if points:
+        return points
+
+    # Fallback for GPX-like documents that expose trackpoints without a track
+    # wrapper. These points cannot be tied to an OSM uploader from local context.
     for pt in root.iter(f"{ns}trkpt"):
         lat = pt.attrib.get("lat")
         lon = pt.attrib.get("lon")
@@ -140,6 +187,13 @@ def parse_gpx_trackpoints(path: Path) -> List[Dict[str, Any]]:
             "lon": float(lon),
             "timestamp": dt,
             "has_timestamp": dt is not None,
+            "osm_user": None,
+            "osm_trace_id": None,
+            "osm_trace_url": None,
+            "osm_trace_name": None,
+            "source_file": path.name,
+            "track_index": None,
+            "track_segment_index": None,
         })
 
     return points
@@ -162,9 +216,15 @@ def load_all_probe_points() -> List[Dict[str, Any]]:
         all_points.extend(pts)
 
     with_time = [p for p in all_points if p["timestamp"] is not None]
-    with_time.sort(key=lambda p: p["timestamp"])
+    with_time.sort(key=lambda p: (point_trace_key(p), p["timestamp"]))
 
     return with_time
+
+
+def point_trace_key(point: Dict[str, Any]) -> str:
+    if point.get("osm_trace_id"):
+        return f"osm_trace:{point.get('osm_trace_id')}"
+    return f"local_track:{point.get('source_file')}:{point.get('track_index')}:{point.get('track_segment_index')}"
 
 
 # --------------------------------------------------
@@ -192,8 +252,9 @@ def build_pseudo_segments(
     for prev, curr in zip(points[:-1], points[1:]):
         gap_min = (curr["timestamp"] - prev["timestamp"]).total_seconds() / 60.0
         jump_m = haversine_m(prev["lat"], prev["lon"], curr["lat"], curr["lon"])
+        trace_changed = point_trace_key(prev) != point_trace_key(curr)
 
-        if gap_min > max_gap_min or jump_m > max_jump_m:
+        if trace_changed or gap_min > max_gap_min or jump_m > max_jump_m:
             if len(current) >= min_points:
                 segments.append(current)
             current = [curr]
@@ -482,6 +543,20 @@ def segment_to_coordinates(segment: List[Dict[str, Any]]) -> List[List[float]]:
     return [[float(p["lat"]), float(p["lon"])] for p in segment]
 
 
+def most_common_segment_value(segment: List[Dict[str, Any]], key: str) -> Optional[Any]:
+    values = [p.get(key) for p in segment if p.get(key) not in (None, "")]
+    if not values:
+        return None
+    return Counter(values).most_common(1)[0][0]
+
+
+def osm_user_history_id(osm_user: Optional[str]) -> str:
+    if not osm_user:
+        return "osm_user_unknown"
+    cleaned = re.sub(r"[^a-zA-Z0-9_]+", "_", str(osm_user).strip()).strip("_").lower()
+    return f"osm_user_{cleaned or 'unknown'}"
+
+
 # --------------------------------------------------
 # History record building
 # --------------------------------------------------
@@ -491,9 +566,17 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
     duration_min = segment_duration_min(segment)
     avg_speed_kmh = segment_speed_kmh(segment)
     max_jump_m = max_segment_jump_m(segment)
+    osm_user = most_common_segment_value(segment, "osm_user")
+    osm_trace_id = most_common_segment_value(segment, "osm_trace_id")
+    osm_trace_url = most_common_segment_value(segment, "osm_trace_url")
+    osm_trace_name = most_common_segment_value(segment, "osm_trace_name")
 
     base_diag = {
         "segment_index": idx,
+        "osm_user": osm_user,
+        "osm_trace_id": osm_trace_id,
+        "osm_trace_url": osm_trace_url,
+        "osm_trace_name": osm_trace_name,
         "raw_trace_distance_km": raw_trace_distance_km,
         "duration_min": duration_min,
         "avg_speed_kmh": avg_speed_kmh,
@@ -510,7 +593,7 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
             print(f"  Segment {idx}: failed to reconstruct route")
             return None, base_diag
 
-        feat = compute_route_features(G, G_proj, parks_union, route)
+        feat = compute_route_features(G, G_proj, parks_union, None, route)
 
         distance_stats = route_line_distance_stats(G, G_proj, route, segment)
         base_diag.update(distance_stats)
@@ -529,6 +612,14 @@ def build_history_record_from_segment(segment: List[Dict[str, Any]], idx: int) -
             "timestamp": segment[0]["timestamp"].isoformat(),
             "mode": "osm_pseudo_trace",
             "source": "osm_public_gps_trackpoints",
+            "osm_user": osm_user,
+            "osm_trace_id": osm_trace_id,
+            "osm_trace_url": osm_trace_url,
+            "osm_trace_name": osm_trace_name,
+            "user_identity_note": (
+                "OSM user metadata identifies the public trace uploader account when present. "
+                "It is not guaranteed to be a clean persistent traveler preference label."
+            ),
             "preference_text": build_synthetic_preference_text(feat),
             "preference_source": "synthetic_from_osm_reconstructed_route_features",
             "preference_note": (
@@ -934,7 +1025,27 @@ def evaluate_profile_ranking(records: List[Dict[str, Any]], max_tests: int = 10)
 # Main
 # --------------------------------------------------
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Build OSM public-trace pseudo-history records. When OSM trace "
+            "uploader metadata is present, records are also grouped by uploader."
+        )
+    )
+    parser.add_argument(
+        "--max-segments",
+        type=int,
+        default=None,
+        help="Maximum useful segments to reconstruct. Useful for quick metadata-aware test runs.",
+    )
+    parser.add_argument("--history-output", type=Path, default=HISTORY_OUTPUT_PATH)
+    parser.add_argument("--quality-output", type=Path, default=QUALITY_REPORT_PATH)
+    parser.add_argument("--ranking-output", type=Path, default=RANKING_EVAL_PATH)
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
     all_points = load_all_probe_points()
 
     total_points = len(all_points)
@@ -944,14 +1055,17 @@ def main():
 
     pseudo_segments = build_pseudo_segments(all_points)
     useful_segments = filter_useful_segments(pseudo_segments)
+    selected_segments = useful_segments[: args.max_segments] if args.max_segments else useful_segments
 
     print(f"Pseudo-segments found: {len(pseudo_segments)}")
     print(f"Useful segments found: {len(useful_segments)}")
+    if args.max_segments:
+        print(f"Processing first {len(selected_segments)} useful segments due to --max-segments={args.max_segments}")
 
     records = []
     map_match_diags = []
 
-    for idx, seg in enumerate(useful_segments):
+    for idx, seg in enumerate(selected_segments):
         print(f"\nProcessing segment {idx}")
         print(
             f"  points={len(seg)}, "
@@ -970,8 +1084,13 @@ def main():
     histories = {
         "osm_trace_toronto": records
     }
+    per_osm_user = defaultdict(list)
+    for record in records:
+        per_osm_user[osm_user_history_id(record.get("osm_user"))].append(record)
+    histories.update(dict(sorted(per_osm_user.items())))
 
-    HISTORY_OUTPUT_PATH.write_text(
+    args.history_output.parent.mkdir(parents=True, exist_ok=True)
+    args.history_output.write_text(
         json.dumps(make_json_safe(histories), indent=2),
         encoding="utf-8"
     )
@@ -980,17 +1099,19 @@ def main():
         total_points=total_points,
         timestamped_points=timestamped_points,
         pseudo_segments=pseudo_segments,
-        useful_segments=useful_segments,
+        useful_segments=selected_segments,
         map_match_diags=map_match_diags,
     )
 
-    QUALITY_REPORT_PATH.write_text(
+    args.quality_output.parent.mkdir(parents=True, exist_ok=True)
+    args.quality_output.write_text(
         json.dumps(make_json_safe(quality_report), indent=2),
         encoding="utf-8"
     )
 
     ranking_eval = evaluate_profile_ranking(records, max_tests=10)
-    RANKING_EVAL_PATH.write_text(
+    args.ranking_output.parent.mkdir(parents=True, exist_ok=True)
+    args.ranking_output.write_text(
         json.dumps(make_json_safe(ranking_eval), indent=2),
         encoding="utf-8"
     )
@@ -998,9 +1119,9 @@ def main():
     print("\n==============================")
     print("OSM Trace History Build Complete")
     print("==============================")
-    print(f"History output: {HISTORY_OUTPUT_PATH}")
-    print(f"Quality report: {QUALITY_REPORT_PATH}")
-    print(f"Ranking eval:   {RANKING_EVAL_PATH}")
+    print(f"History output: {args.history_output}")
+    print(f"Quality report: {args.quality_output}")
+    print(f"Ranking eval:   {args.ranking_output}")
     print(f"User ID: osm_trace_toronto")
     print(f"Records: {len(records)}")
 
@@ -1017,6 +1138,7 @@ def main():
         "exploratory_usable": quality_report["exploratory_usable"],
         "strict_failed_checks": quality_report["failed_checks"]["strict"],
         "exploratory_failed_checks": quality_report["failed_checks"]["exploratory"],
+        "history_ids": {key: len(value) for key, value in histories.items()},
     }, indent=2))
 
     print("\nProfile Ranking Evaluation Summary:")

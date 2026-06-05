@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "input": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\porto_candidate_baseline_comparison.json",
+    "note": "This summarizes available ablation rows from the input artifact. The no-temporal vehicle-profile row requires rerunning the updated Porto evaluator."
+  },
+  "rows": [
+    {
+      "Method": "Shortest-distance",
+      "method_key": "shortest_distance",
+      "Status": "ran",
+      "N": 100,
+      "Notes": "",
+      "Hit@1": 0.12,
+      "Hit@3": 0.29,
+      "MRR": 0.29971825396825397,
+      "NDCG@3": 0.5452023212309424,
+      "mean feature distance": 1.8187027216733613,
+      "path F1": 0.5116106789872537,
+      "NDTW": 0.29014617479600585
+    },
+    {
+      "Method": "Generic profile",
+      "method_key": "profile",
+      "Status": "ran",
+      "N": 100,
+      "Notes": "",
+      "Hit@1": 0.1,
+      "Hit@3": 0.21,
+      "MRR": 0.2635079365079365,
+      "NDCG@3": 0.4450003093518638,
+      "mean feature distance": 1.976744020631612,
+      "path F1": 0.44541428299006486,
+      "NDTW": 0.21537526019058767
+    },
+    {
+      "Method": "Vehicle profile without temporal context",
+      "method_key": "vehicle_profile_no_temporal",
+      "Status": "missing",
+      "N": 0,
+      "Notes": "Not present in the input artifact; rerun the Porto evaluator after the May 2026 no-temporal variant change.",
+      "Hit@1": null,
+      "Hit@3": null,
+      "MRR": null,
+      "NDCG@3": null,
+      "mean feature distance": null,
+      "path F1": null,
+      "NDTW": null
+    },
+    {
+      "Method": "Vehicle profile with temporal context",
+      "method_key": "vehicle_profile",
+      "Status": "ran",
+      "N": 100,
+      "Notes": "",
+      "Hit@1": 0.23,
+      "Hit@3": 0.43,
+      "MRR": 0.40815873015873017,
+      "NDCG@3": 0.6153464805036201,
+      "mean feature distance": 1.8186202018829736,
+      "path F1": 0.47151044574967776,
+      "NDTW": 0.2399965672478959
+    },
+    {
+      "Method": "Learned feature ranker",
+      "method_key": "learned_feature_ranker",
+      "Status": "ran",
+      "N": 97,
+      "Notes": "",
+      "Hit@1": 0.21649484536082475,
+      "Hit@3": 0.4536082474226804,
+      "MRR": 0.40075683194239897,
+      "NDCG@3": 0.5973035669424164,
+      "mean feature distance": 1.72502151185158,
+      "path F1": 0.4767024014845233,
+      "NDTW": 0.26894082234566863
+    }
+  ]
+}

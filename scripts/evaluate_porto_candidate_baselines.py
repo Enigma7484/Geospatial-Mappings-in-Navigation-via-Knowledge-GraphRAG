@@ -63,6 +63,7 @@ BASELINE_ORDER = [
     "random",
     "shortest_distance",
     "profile",
+    "vehicle_profile_no_temporal",
     "vehicle_profile",
     "learned_feature_ranker",
     "prompt_sbert",
@@ -903,6 +904,22 @@ def evaluate_porto(
                 )
                 query["methods"]["profile"]["scores"] = [float(x) for x in profile_scores]
 
+                no_temporal_profile = dict(profile)
+                no_temporal_profile["context"] = {}
+                vehicle_no_temporal_scores = vehicle_profile_scores(candidate_features, no_temporal_profile)
+                vehicle_no_temporal_ranking = ranking_from_scores(vehicle_no_temporal_scores)
+                query["methods"]["vehicle_profile_no_temporal"] = evaluate_ranking(
+                    "vehicle_profile_no_temporal",
+                    vehicle_no_temporal_ranking,
+                    oracle_index,
+                    relevances,
+                    feature_distances,
+                    candidate_features,
+                    observed_features["coordinates"],
+                    trip,
+                )
+                query["methods"]["vehicle_profile_no_temporal"]["scores"] = [float(x) for x in vehicle_no_temporal_scores]
+
                 vehicle_scores = vehicle_profile_scores(candidate_features, profile)
                 vehicle_ranking = ranking_from_scores(vehicle_scores)
                 query["methods"]["vehicle_profile"] = evaluate_ranking(
@@ -1040,6 +1057,7 @@ def summarize_results(evaluation: Dict[str, Any], bootstrap_samples: int, random
     skipped_reasons = {
         "prompt_sbert": "Porto trajectories do not include natural-language preference text.",
         "hybrid": "Hybrid requires both profile history and natural-language preference text.",
+        "vehicle_profile_no_temporal": "Trajectory-derived vehicle profile scoring without temporal context failed or no successful query results.",
         "vehicle_profile": "Trajectory-derived vehicle profile scoring failed or no successful query results.",
         "learned_feature_ranker": "Not enough prior candidate-label examples or scikit-learn unavailable.",
     }

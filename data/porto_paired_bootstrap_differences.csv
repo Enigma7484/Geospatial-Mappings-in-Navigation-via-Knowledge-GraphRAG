@@ -1,0 +1,22 @@
+Metric,Method A,Method B,Difference,95% CI low,95% CI high,Significant?,Notes
+Hit@1,vehicle_profile,shortest_distance,0.11,0.0,0.22,No,Paired over 100 queries; positive means Method A is numerically larger.
+Hit@3,vehicle_profile,shortest_distance,0.14,0.01,0.26,Yes,Paired over 100 queries; positive means Method A is numerically larger.
+MRR,vehicle_profile,shortest_distance,0.1084404761904762,0.01581111111111111,0.19978283730158727,Yes,Paired over 100 queries; positive means Method A is numerically larger.
+NDCG@3,vehicle_profile,shortest_distance,0.07014415927267766,-0.014979623655820654,0.15467612087129734,No,Paired over 100 queries; positive means Method A is numerically larger.
+mean feature distance,vehicle_profile,shortest_distance,-8.251979038789603e-05,-0.12899209012816085,0.13429164691641926,No,"Paired over 100 queries; positive means Method A is numerically larger. For this metric, lower values are better."
+path F1,vehicle_profile,shortest_distance,-0.040100233237575965,-0.08852353203824888,0.008951363406175817,No,Paired over 100 queries; positive means Method A is numerically larger.
+NDTW,vehicle_profile,shortest_distance,-0.05014960754810991,-0.10190101258093667,0.005377166582870874,No,Paired over 100 queries; positive means Method A is numerically larger.
+Hit@1,learned_feature_ranker,shortest_distance,0.09278350515463918,0.0,0.18556701030927836,No,Paired over 97 queries; positive means Method A is numerically larger.
+Hit@3,learned_feature_ranker,shortest_distance,0.16494845360824742,0.030927835051546393,0.29896907216494845,Yes,Paired over 97 queries; positive means Method A is numerically larger.
+MRR,learned_feature_ranker,shortest_distance,0.0982122402225495,0.0193298969072165,0.1781624324987727,Yes,Paired over 97 queries; positive means Method A is numerically larger.
+NDCG@3,learned_feature_ranker,shortest_distance,0.0478224134931052,-0.036310792762303076,0.13034435591206958,No,Paired over 97 queries; positive means Method A is numerically larger.
+mean feature distance,learned_feature_ranker,shortest_distance,-0.09160262710274356,-0.20282811091966055,0.017759025966716743,No,"Paired over 97 queries; positive means Method A is numerically larger. For this metric, lower values are better."
+path F1,learned_feature_ranker,shortest_distance,-0.0455301453902856,-0.09390312270687459,0.005248027217216221,No,Paired over 97 queries; positive means Method A is numerically larger.
+NDTW,learned_feature_ranker,shortest_distance,-0.028864901089099528,-0.08558244252670553,0.03000276015520361,No,Paired over 97 queries; positive means Method A is numerically larger.
+Hit@1,vehicle_profile,profile,0.13,0.03,0.23,Yes,Paired over 100 queries; positive means Method A is numerically larger.
+Hit@3,vehicle_profile,profile,0.22,0.09,0.35,Yes,Paired over 100 queries; positive means Method A is numerically larger.
+MRR,vehicle_profile,profile,0.14465079365079364,0.05784920634920636,0.23200069444444443,Yes,Paired over 100 queries; positive means Method A is numerically larger.
+NDCG@3,vehicle_profile,profile,0.1703461711517562,0.080278171719683,0.25889372463746324,Yes,Paired over 100 queries; positive means Method A is numerically larger.
+mean feature distance,vehicle_profile,profile,-0.15812381874863893,-0.26479011753032716,-0.05682881316062331,Yes,"Paired over 100 queries; positive means Method A is numerically larger. For this metric, lower values are better."
+path F1,vehicle_profile,profile,0.026096162759612903,-0.02464557751342489,0.07616745121481577,No,Paired over 100 queries; positive means Method A is numerically larger.
+NDTW,vehicle_profile,profile,0.024621307057308264,-0.026597294902711528,0.07481956817570454,No,Paired over 100 queries; positive means Method A is numerically larger.

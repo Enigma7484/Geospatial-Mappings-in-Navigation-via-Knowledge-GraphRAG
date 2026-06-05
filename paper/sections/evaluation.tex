@@ -1,4 +1,4 @@
-The evaluation has three layers: reconstruction quality, threshold sensitivity, and route-candidate ranking quality. This separation is intentional because public OSM GPS trackpoints are not clean per-user histories.
+The evaluation has three layers: reconstruction quality, threshold sensitivity, and route-candidate reranking quality. This separation is intentional because public OSM GPS trackpoints are not clean per-user histories.
 
 \subsection{Reconstruction Quality}
 The trace pipeline reports timestamp coverage, pseudo-segments found, useful segment rate, map-match success rate, GPS-to-route distance, and route-distance ratio. Strict usability requires timestamp coverage at least $0.80$, at least five useful segments, map-match success rate at least $0.70$, median GPS-to-route distance at most $100$ meters, and median route-distance ratio in $[0.5, 2.0]$. Exploratory usability relaxes only the route-distance ratio ceiling to $2.5$.
@@ -7,7 +7,7 @@ The trace pipeline reports timestamp coverage, pseudo-segments found, useful seg
 To avoid tuning a single threshold setting, we evaluate five segmentation/filtering configurations: the current configuration, a stricter time-gap split, a stricter spatial-jump split, a stricter minimum-distance filter, and a lower speed ceiling. Each configuration is evaluated with the same reconstruction diagnostics. This study tests whether the OSM-derived pseudo-history pipeline is stable under reasonable threshold changes.
 
 \subsection{Route-Candidate Baselines}
-The route-candidate evaluation uses generated route candidates. For each held-out pseudo-history record, the evaluator:
+The route-candidate reranking evaluation uses generated route candidates. For each held-out pseudo-history record, the evaluator:
 
 \begin{enumerate}
   \item Uses earlier records as profile history.
@@ -29,4 +29,4 @@ Ranking quality is measured with Hit@1, Hit@3, MRR, NDCG@3, and mean feature dis
 Path similarity is measured with point-overlap precision/recall/F1, normalized dynamic time warping (NDTW), coordinate edit distance, and maximum nearest-point distance between the top-ranked route and the held-out reconstructed route. For the Porto public-dataset benchmark, we also report 95\% bootstrap confidence intervals over queries.
 
 \subsection{External Benchmark Goal}
-The current OSM pseudo-history evaluation is an internal open-trace evaluation, while the Porto benchmark is the bridge to external comparison. The Porto setup uses public taxi trajectories, simplifies dense GPS samples into spatially separated reconstruction anchors, reconstructs an observed route on an OSM driving graph, generates OSM route candidates for the same origin and destination, and reports ranking metrics plus path-overlap metrics. This creates the evaluation substrate needed for NASR-style route recovery comparisons with matched data, splits, and metrics. We do not report NASR as reproduced in this paper because the official implementation requires its own preprocessing and train/test format; reproducing it under the same Porto split remains the strongest next external-comparison step.
+The current OSM pseudo-history evaluation is an internal open-trace evaluation, while the Porto benchmark is the primary public-data path for external comparison. The Porto setup uses public taxi trajectories, simplifies dense GPS samples into spatially separated reconstruction anchors, reconstructs an observed route on an OSM driving graph, generates OSM route candidates for the same origin and destination, and reports ranking metrics plus path-overlap metrics. This creates the evaluation substrate needed for NASR-style route recovery comparisons with matched data, splits, and metrics. We do not report NASR as reproduced in this paper because the official implementation requires its own preprocessing and train/test format; reproducing it under the same Porto split remains the strongest next external-comparison step.

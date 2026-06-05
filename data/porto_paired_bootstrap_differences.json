@@ -1,0 +1,220 @@
+{
+  "metadata": {
+    "input": "C:\\Users\\enigm\\OneDrive\\Desktop\\ML\\Geospatial Mappings in Navigation via (Knowledge)GraphRAG\\data\\porto_candidate_baseline_comparison.json",
+    "bootstrap_samples": 10000,
+    "random_seed": 20260521,
+    "note": "Paired differences are computed only over queries where both methods are present."
+  },
+  "rows": [
+    {
+      "Metric": "Hit@1",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": 0.11,
+      "95% CI low": 0.0,
+      "95% CI high": 0.22,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "Hit@3",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": 0.14,
+      "95% CI low": 0.01,
+      "95% CI high": 0.26,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "MRR",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": 0.1084404761904762,
+      "95% CI low": 0.01581111111111111,
+      "95% CI high": 0.19978283730158727,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "NDCG@3",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": 0.07014415927267766,
+      "95% CI low": -0.014979623655820654,
+      "95% CI high": 0.15467612087129734,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "mean feature distance",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": -8.251979038789603e-05,
+      "95% CI low": -0.12899209012816085,
+      "95% CI high": 0.13429164691641926,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger. For this metric, lower values are better."
+    },
+    {
+      "Metric": "path F1",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": -0.040100233237575965,
+      "95% CI low": -0.08852353203824888,
+      "95% CI high": 0.008951363406175817,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "NDTW",
+      "Method A": "vehicle_profile",
+      "Method B": "shortest_distance",
+      "Difference": -0.05014960754810991,
+      "95% CI low": -0.10190101258093667,
+      "95% CI high": 0.005377166582870874,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "Hit@1",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": 0.09278350515463918,
+      "95% CI low": 0.0,
+      "95% CI high": 0.18556701030927836,
+      "Significant?": "No",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "Hit@3",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": 0.16494845360824742,
+      "95% CI low": 0.030927835051546393,
+      "95% CI high": 0.29896907216494845,
+      "Significant?": "Yes",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "MRR",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": 0.0982122402225495,
+      "95% CI low": 0.0193298969072165,
+      "95% CI high": 0.1781624324987727,
+      "Significant?": "Yes",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "NDCG@3",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": 0.0478224134931052,
+      "95% CI low": -0.036310792762303076,
+      "95% CI high": 0.13034435591206958,
+      "Significant?": "No",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "mean feature distance",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": -0.09160262710274356,
+      "95% CI low": -0.20282811091966055,
+      "95% CI high": 0.017759025966716743,
+      "Significant?": "No",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger. For this metric, lower values are better."
+    },
+    {
+      "Metric": "path F1",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": -0.0455301453902856,
+      "95% CI low": -0.09390312270687459,
+      "95% CI high": 0.005248027217216221,
+      "Significant?": "No",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "NDTW",
+      "Method A": "learned_feature_ranker",
+      "Method B": "shortest_distance",
+      "Difference": -0.028864901089099528,
+      "95% CI low": -0.08558244252670553,
+      "95% CI high": 0.03000276015520361,
+      "Significant?": "No",
+      "Notes": "Paired over 97 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "Hit@1",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": 0.13,
+      "95% CI low": 0.03,
+      "95% CI high": 0.23,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "Hit@3",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": 0.22,
+      "95% CI low": 0.09,
+      "95% CI high": 0.35,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "MRR",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": 0.14465079365079364,
+      "95% CI low": 0.05784920634920636,
+      "95% CI high": 0.23200069444444443,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "NDCG@3",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": 0.1703461711517562,
+      "95% CI low": 0.080278171719683,
+      "95% CI high": 0.25889372463746324,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "mean feature distance",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": -0.15812381874863893,
+      "95% CI low": -0.26479011753032716,
+      "95% CI high": -0.05682881316062331,
+      "Significant?": "Yes",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger. For this metric, lower values are better."
+    },
+    {
+      "Metric": "path F1",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": 0.026096162759612903,
+      "95% CI low": -0.02464557751342489,
+      "95% CI high": 0.07616745121481577,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    },
+    {
+      "Metric": "NDTW",
+      "Method A": "vehicle_profile",
+      "Method B": "profile",
+      "Difference": 0.024621307057308264,
+      "95% CI low": -0.026597294902711528,
+      "95% CI high": 0.07481956817570454,
+      "Significant?": "No",
+      "Notes": "Paired over 100 queries; positive means Method A is numerically larger."
+    }
+  ]
+}

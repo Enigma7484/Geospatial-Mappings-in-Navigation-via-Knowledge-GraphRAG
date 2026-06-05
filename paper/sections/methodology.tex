@@ -1,4 +1,4 @@
-The system contains six main stages: trace processing, approximate map matching, feature extraction, profile construction, candidate generation, and route ranking. Figure~\ref{fig:pipeline} summarizes the data flow.
+The system contains six main stages: trace processing, approximate map matching, feature extraction, profile construction, candidate generation, and route-candidate reranking. Figure~\ref{fig:pipeline} summarizes the data flow.
 
 \begin{figure*}[t]
   \centering
@@ -10,10 +10,10 @@ The system contains six main stages: trace processing, approximate map matching,
   $\rightarrow$ route feature extraction
   $\rightarrow$ dynamic profile construction
   $\rightarrow$ OSM candidate generation
-  $\rightarrow$ ranking and evaluation
+  $\rightarrow$ reranking and evaluation
   \end{minipage}}
-  \caption{End-to-end framework. Public movement signals are converted into reconstructed route references and pseudo-history profiles. For a new origin-destination query, the system generates OSM candidates and ranks them with baseline, profile, prompt, or hybrid methods.}
-  \Description{A pipeline from public movement signals through segmentation, map matching, feature extraction, profile construction, candidate generation, ranking, and evaluation.}
+  \caption{End-to-end framework. Public movement signals are converted into reconstructed route references and pseudo-history profiles. For a new origin-destination query, the system generates OSM candidates and reranks them with baseline, profile, prompt, or hybrid methods.}
+  \Description{A pipeline from public movement signals through segmentation, map matching, feature extraction, profile construction, candidate generation, reranking, and evaluation.}
   \label{fig:pipeline}
 \end{figure*}
 
@@ -36,14 +36,14 @@ For the Porto benchmark, the generic walking profile is supplemented with a traj
 \subsection{Candidate Generation}
 The route generator constructs a local OSM graph around the query and returns a small set of route alternatives. The walking pipeline uses OSM walking networks and route attributes such as footways, crossings, lighting, and park proximity. The Porto pipeline uses a shared OSM driving graph around central Porto and generates up to ten diverse vehicle candidates by interleaving multiple edge-weight variants, including shortest, major-road-preferring, major-road-avoiding, calmer local-road, low-intersection, and balanced driving costs. Keeping the candidate pool small preserves runtime for the GUI/API workflow and makes the reranking problem inspectable. The reported feature and path oracles quantify the upper bound imposed by this candidate pool.
 
-\subsection{Ranking Modes}
+\subsection{Reranking Modes}
 The system supports the following evaluation methods:
 
 \begin{itemize}
   \item \textbf{Random:} random permutation of generated route candidates.
   \item \textbf{Shortest-distance:} candidates sorted by OSM route length.
   \item \textbf{Profile:} candidates scored using dynamic profile weights.
-  \item \textbf{Prompt/SBERT:} route summaries ranked by semantic similarity to preference text.
+  \item \textbf{Prompt/SBERT:} route summaries reranked by semantic similarity to preference text.
   \item \textbf{Hybrid:} $0.75$ profile score plus $0.25$ prompt/SBERT score, matching the backend.
   \item \textbf{Learned feature ranker:} a random-forest regressor trained only on earlier query candidates to predict feature distance to the reconstructed reference.
 \end{itemize}
