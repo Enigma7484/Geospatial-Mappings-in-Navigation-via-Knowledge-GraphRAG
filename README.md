@@ -69,9 +69,17 @@ paper/
   references.bib                  Bibliography
 ```
 
+The React frontend lives in the sibling checkout:
+
+```text
+../GraphRAG-NavEng-FrontEnd/frontend
+```
+
+It reads `VITE_API_BASE_URL` and falls back to `http://127.0.0.1:8000` for local development.
+
 ## Setup
 
-Use Python 3.11 on Windows if possible, matching the current tested environment.
+Use Python 3.11. The project was last exercised on Windows, but it is a better fit for a modern Mac because OSMnx/GeoPandas route generation is CPU and memory heavy.
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -116,12 +124,32 @@ Example `/rank-routes` request:
 }
 ```
 
-To use the OSM pseudo-history file for profile or hybrid mode:
+The API now defaults to the current OSM pseudo-history file:
 
 ```powershell
 $env:GEOROUTE_USER_HISTORY_PATH="data/user_histories_osm_trace.json"
 uvicorn app.main:app --reload
 ```
+
+For a no-key/no-cost prompt mode, set:
+
+```powershell
+$env:GEOROUTE_PROMPT_RANKER="lexical"
+```
+
+Without that, `GEOROUTE_PROMPT_RANKER=auto` uses Gemini when a Gemini key is present and otherwise falls back to local SBERT if the full research dependencies are installed.
+
+## Free Deployment
+
+See [docs/FREE_BACKEND_DEPLOYMENT.md](docs/FREE_BACKEND_DEPLOYMENT.md) for the current zero-payment deployment plan.
+
+Short version:
+
+- **Hosted demo:** Hugging Face Spaces with the included `Dockerfile`.
+- **Most capable live engine:** run the backend on the Mac M5 and expose it with Cloudflare Tunnel.
+- **Avoid for this backend:** 512 MB free web-service tiers, because geospatial Python imports and graph generation are too heavy.
+
+The deploy image uses `requirements-deploy.txt`, omits SBERT/PyTorch, and defaults to lexical prompt ranking so it can run without paid model APIs.
 
 ## Main OSM Trace Pipeline
 

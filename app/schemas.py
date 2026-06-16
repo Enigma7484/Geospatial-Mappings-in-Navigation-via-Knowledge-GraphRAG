@@ -3,8 +3,8 @@ from typing import List, Optional, Dict, Any, Literal
 
 
 class RankRoutesRequest(BaseModel):
-    origin: str
-    destination: str
+    origin: Any
+    destination: Any
     preference: Optional[str] = None
     user_id: Optional[str] = None
     request_datetime: Optional[str] = None

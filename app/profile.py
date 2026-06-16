@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 import numpy as np
 
-DEFAULT_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "user_histories.json"
+DEFAULT_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "user_histories_osm_trace.json"
 
 
 def get_data_path() -> Path:

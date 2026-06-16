@@ -1,17 +1,28 @@
+from __future__ import annotations
+
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 
 from .schemas import RankRoutesRequest, RankRoutesResponse, RouteResponse
 
-print("Starting FastAPI app...")
-
 app = FastAPI(title="GeoRoute Preference API")
+
+
+def _allowed_origins() -> list[str]:
+    raw = os.getenv("GEOROUTE_ALLOWED_ORIGINS", "*")
+    origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
+    return origins or ["*"]
+
+
+ALLOWED_ORIGINS = _allowed_origins()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=ALLOWED_ORIGINS != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -31,8 +42,26 @@ def root():
     return {"message": "GeoRoute Preference API is running"}
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.post("/rank-routes", response_model=RankRoutesResponse)
 def rank_routes(payload: RankRoutesRequest):
+    max_dist = int(os.getenv("GEOROUTE_MAX_DIST_METERS", "6000"))
+    max_routes = int(os.getenv("GEOROUTE_MAX_K_ROUTES", "10"))
+    if payload.dist_meters > max_dist:
+        raise HTTPException(
+            status_code=400,
+            detail=f"dist_meters must be <= {max_dist}.",
+        )
+    if payload.k_routes > max_routes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"k_routes must be <= {max_routes}.",
+        )
+
     from .routing import generate_rankable_routes
     from .profile import (
         get_request_context,

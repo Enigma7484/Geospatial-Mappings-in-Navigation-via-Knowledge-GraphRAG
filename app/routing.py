@@ -1,7 +1,20 @@
-import osmnx as ox
-import numpy as np
 from collections import Counter
+import os
 from typing import Any
+
+import numpy as np
+import osmnx as ox
+
+
+def configure_osmnx():
+    ox.settings.use_cache = os.getenv("OSMNX_USE_CACHE", "true").strip().lower() != "false"
+    ox.settings.log_console = os.getenv("OSMNX_LOG_CONSOLE", "false").strip().lower() == "true"
+    cache_folder = os.getenv("OSMNX_CACHE_FOLDER")
+    if cache_folder:
+        ox.settings.cache_folder = cache_folder
+
+
+configure_osmnx()
 
 
 def resolve_location(location: Any):

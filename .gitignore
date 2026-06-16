@@ -1,9 +1,31 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .env
+.env.*
+!.env.example
 cache/
 .vscode/
+.DS_Store
 /geolife_raw/
 /data/porto/
 *.zip
+
+# Local OSMnx/cache data can grow quickly and is rebuildable.
+/osmnx_cache/
+
+# LaTeX build outputs; keep source .tex/.bib and exported PDFs only.
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
