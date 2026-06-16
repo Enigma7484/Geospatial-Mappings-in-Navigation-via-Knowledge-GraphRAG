@@ -6,3 +6,4 @@ numpy
 geopandas
 shapely
 pydantic
+scikit-learn
