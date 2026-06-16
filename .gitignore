@@ -10,6 +10,7 @@ __pycache__/
 cache/
 .vscode/
 .DS_Store
+logs/
 /geolife_raw/
 /data/porto/
 *.zip

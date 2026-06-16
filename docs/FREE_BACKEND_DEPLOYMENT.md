@@ -56,6 +56,58 @@ Tradeoffs:
 - Your Mac and internet connection are the uptime boundary.
 - For a stable branded URL, use a Cloudflare-managed domain tunnel. The tunnel itself is free, but a domain may not be.
 
+## No-Terminal Mac Service
+
+Use this when the Mac will be awake but you do not want a terminal window keeping the backend alive.
+
+```bash
+./scripts/install_macos_backend_service.sh
+```
+
+This installs a macOS LaunchAgent named `com.georoute.backend`. It starts the FastAPI backend at login and restarts it if it crashes.
+
+The installer copies the deployable backend into:
+
+```text
+~/.georoute-backend
+```
+
+That avoids macOS privacy restrictions that can prevent background services from reading files under `Documents`.
+
+Check it:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+Logs are written to:
+
+```text
+~/.georoute-backend/logs/backend.launchd.out.log
+~/.georoute-backend/logs/backend.launchd.err.log
+```
+
+Remove it:
+
+```bash
+./scripts/uninstall_macos_backend_service.sh
+```
+
+Important limitation: this still depends on the Mac being awake, online, and logged into the user session. It is not the same as a cloud deployment.
+
+## Actually Always-On Without Your Mac
+
+If the backend must keep running when the Mac is asleep, closed, restarted, or offline, it needs a host outside the laptop.
+
+The no-payment path is still Hugging Face Spaces with Docker:
+
+- URL stays stable.
+- No terminal session required.
+- Cold starts and free-tier availability are the tradeoff.
+- The included `Dockerfile` is ready for this.
+
+To deploy there, you need a Hugging Face account and either push this repo to a Docker Space manually or provide a Hugging Face token for CLI/Git-based deployment.
+
 ## Frontend Connection
 
 The sibling frontend at `../GraphRAG-NavEng-FrontEnd/frontend` already reads:
