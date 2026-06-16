@@ -108,6 +108,8 @@ The no-payment path is still Hugging Face Spaces with Docker:
 
 To deploy there, you need a Hugging Face account and either push this repo to a Docker Space manually or provide a Hugging Face token for CLI/Git-based deployment.
 
+See [HUGGINGFACE_SPACE_DEPLOYMENT.md](HUGGINGFACE_SPACE_DEPLOYMENT.md) for the implementation scripts and GitHub Actions workflow.
+
 ## Frontend Connection
 
 The sibling frontend at `../GraphRAG-NavEng-FrontEnd/frontend` already reads:
