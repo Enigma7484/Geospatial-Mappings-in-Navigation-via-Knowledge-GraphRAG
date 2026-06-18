@@ -12,6 +12,7 @@ fi
 
 SPACE_ID="${HF_SPACE_ID:-}"
 TOKEN="${HF_TOKEN:-}"
+USERNAME="${HF_USERNAME:-${SPACE_ID%%/*}}"
 COMMIT_MESSAGE="${1:-Deploy GeoRoute backend}"
 
 if [ -z "$SPACE_ID" ]; then
@@ -74,6 +75,8 @@ git add .
 git commit -m "$COMMIT_MESSAGE"
 git branch -M main
 git remote add space "https://huggingface.co/spaces/$SPACE_ID"
-git -c "http.https://huggingface.co/.extraheader=Authorization: Bearer $TOKEN" push --force space main
+git -c credential.helper= \
+  -c "credential.helper=!f() { echo username=$USERNAME; echo password=$TOKEN; }; f" \
+  push --force space main
 
 echo "Deployed to https://huggingface.co/spaces/$SPACE_ID"
