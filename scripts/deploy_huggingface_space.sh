@@ -2,6 +2,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [ -f "$ROOT_DIR/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT_DIR/.env"
+  set +a
+fi
+
 SPACE_ID="${HF_SPACE_ID:-}"
 TOKEN="${HF_TOKEN:-}"
 COMMIT_MESSAGE="${1:-Deploy GeoRoute backend}"
