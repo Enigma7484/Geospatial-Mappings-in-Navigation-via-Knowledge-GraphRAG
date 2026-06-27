@@ -8,7 +8,10 @@ import numpy as np
 
 from .schemas import RankRoutesRequest, RankRoutesResponse, RouteResponse
 
-app = FastAPI(title="GeoRoute Preference API")
+app = FastAPI(
+    title="MyWay API",
+    description="Preference-aware route-candidate ranking powered by OpenStreetMap.",
+)
 
 
 def _allowed_origins() -> list[str]:
@@ -39,7 +42,7 @@ def minmax(arr):
 
 @app.get("/")
 def root():
-    return {"message": "GeoRoute Preference API is running"}
+    return {"message": "MyWay API is running"}
 
 
 @app.get("/health")

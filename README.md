@@ -1,6 +1,8 @@
-# Dynamic OSM-Based Profile Routing from Public GPS Trace Signals
+# MyWay
 
-Research prototype for preference-aware route ranking with OpenStreetMap. The system generates OSM walking/vehicle route candidates, extracts interpretable route-level features, builds dynamic pseudo-history profiles from OSM-derived historical movement signals, and compares random, shortest-distance, profile, trajectory-derived vehicle profile, learned feature-ranker, prompt/SBERT, and hybrid ranking baselines.
+MyWay is a research prototype for preference-aware route ranking with OpenStreetMap. The system generates OSM walking/vehicle route candidates, extracts interpretable route-level features, builds dynamic pseudo-history profiles from OSM-derived historical movement signals, and compares random, shortest-distance, profile, trajectory-derived vehicle profile, learned feature-ranker, prompt/SBERT, and hybrid ranking baselines.
+
+The research paper retains the descriptive title **Dynamic OSM-Based Profile Routing from Public GPS Trace Signals**. MyWay is the product name; it replaces the earlier GraphRAG NavEng/GeoRoute branding. Existing `GEOROUTE_*` environment variables remain supported for deployment compatibility.
 
 This is not a clean per-user trajectory product yet. Public OSM GPS traces are treated as exploratory movement signals and converted into **pseudo-history profiles**. Use that wording in reports and papers unless a later dataset provides verified user identity and trip labels.
 
@@ -59,6 +61,9 @@ docs/
   PUBLISHABLE_BENCHMARK_PLAN.md
   ONE_PAGE_BASELINE_EXPLANATION.md
   RESEARCH_GAP_AND_NOVELTY.md
+  MYWAY_PRODUCT_STRATEGY.md
+  EXPERT_REVIEW_PROGRAM.md
+  EXPERT_REVIEW_LOG.md
   framework_diagram.mmd
   flowchart_background.md
 
@@ -76,6 +81,18 @@ The React frontend lives in the sibling checkout:
 ```
 
 It reads `VITE_API_BASE_URL` and falls back to `http://127.0.0.1:8000` for local development.
+
+## Product And Review Work
+
+- [Product strategy, industry use cases, ROI, and pricing](docs/MYWAY_PRODUCT_STRATEGY.md)
+- [Independent expert-review and LinkedIn publication workflow](docs/EXPERT_REVIEW_PROGRAM.md)
+- [Versioned expert-review evidence log](docs/EXPERT_REVIEW_LOG.md)
+
+Run the configurable value-engineering model with:
+
+```bash
+python scripts/calculate_customer_roi.py --scenario small_fleet
+```
 
 ## Setup
 

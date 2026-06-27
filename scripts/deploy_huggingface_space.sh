@@ -13,10 +13,10 @@ fi
 SPACE_ID="${HF_SPACE_ID:-}"
 TOKEN="${HF_TOKEN:-}"
 USERNAME="${HF_USERNAME:-${SPACE_ID%%/*}}"
-COMMIT_MESSAGE="${1:-Deploy GeoRoute backend}"
+COMMIT_MESSAGE="${1:-Deploy MyWay backend}"
 
 if [ -z "$SPACE_ID" ]; then
-  echo "HF_SPACE_ID is required, for example: Enigma7484/georoute-backend" >&2
+  echo "HF_SPACE_ID is required, for example: Enigma543/georoute-backend" >&2
   exit 1
 fi
 
@@ -40,7 +40,7 @@ rsync -a "$ROOT_DIR/requirements-deploy.txt" "$TMP_DIR/requirements-deploy.txt"
 
 cat > "$TMP_DIR/README.md" <<'README'
 ---
-title: GeoRoute Preference API
+title: MyWay API
 emoji: 🗺️
 colorFrom: blue
 colorTo: green
@@ -50,9 +50,9 @@ pinned: false
 license: mit
 ---
 
-# GeoRoute Preference API
+# MyWay API
 
-FastAPI backend for preference-aware route ranking with OpenStreetMap-derived route candidates.
+FastAPI backend for MyWay preference-aware route ranking with OpenStreetMap-derived route candidates.
 
 Health check:
 
@@ -69,8 +69,8 @@ README
 
 cd "$TMP_DIR"
 git init
-git config user.name "GeoRoute Deploy"
-git config user.email "deploy@georoute.local"
+git config user.name "MyWay Deploy"
+git config user.email "deploy@myway.local"
 git add .
 git commit -m "$COMMIT_MESSAGE"
 git branch -M main
