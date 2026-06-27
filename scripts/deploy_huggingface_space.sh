@@ -4,10 +4,25 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [ -f "$ROOT_DIR/.env" ]; then
-  set -a
-  # shellcheck disable=SC1091
-  . "$ROOT_DIR/.env"
-  set +a
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ""|[[:space:]]*'#'*) continue ;;
+    esac
+
+    key="${line%%=*}"
+    value="${line#*=}"
+    case "$key" in
+      HF_SPACE_ID|HF_USERNAME|HF_TOKEN)
+        value="$(printf '%s' "$value" | tr -d '\140')"
+        if [[ "$value" == \"*\" ]]; then
+          value="${value:1:${#value}-2}"
+        elif [[ "$value" == \'*\' ]]; then
+          value="${value:1:${#value}-2}"
+        fi
+        export "$key=$value"
+        ;;
+    esac
+  done < "$ROOT_DIR/.env"
 fi
 
 SPACE_ID="${HF_SPACE_ID:-}"
