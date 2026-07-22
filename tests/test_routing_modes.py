@@ -2,7 +2,11 @@ import unittest
 
 import networkx as nx
 
-from app.routing import annotate_edge_generation_costs, estimate_edge_speed_kph
+from app.routing import (
+    annotate_edge_generation_costs,
+    estimate_edge_speed_kph,
+    straight_line_distance_m,
+)
 from app.ranking import feature_preference_scores
 from app.schemas import RankRoutesRequest
 
@@ -19,6 +23,11 @@ class RoutingModeTests(unittest.TestCase):
             48.2802,
             places=3,
         )
+
+    def test_straight_line_distance_for_short_city_trip(self):
+        distance = straight_line_distance_m((43.6629, -79.3957), (43.6535, -79.3839))
+        self.assertGreater(distance, 1000)
+        self.assertLess(distance, 2000)
 
     def test_driving_edges_receive_faster_time_costs(self):
         graph = nx.MultiDiGraph()

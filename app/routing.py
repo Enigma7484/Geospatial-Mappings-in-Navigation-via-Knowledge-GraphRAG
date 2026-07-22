@@ -1,4 +1,5 @@
 from collections import Counter
+from math import asin, cos, radians, sin, sqrt
 import os
 from typing import Any
 
@@ -23,6 +24,15 @@ def resolve_location(location: Any):
     if isinstance(location, (list, tuple)) and len(location) == 2:
         return (float(location[0]), float(location[1]))
     return ox.geocode(location)
+
+
+def straight_line_distance_m(point_a, point_b):
+    lat1, lon1 = map(radians, point_a)
+    lat2, lon2 = map(radians, point_b)
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    value = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    return 2 * 6_371_000 * asin(sqrt(value))
 
 
 def normalize_highway_tag(hwy):
@@ -343,10 +353,15 @@ def get_major_roads_union(origin_point, dist_meters, G_proj):
         return roads_proj.geometry.unary_union
 
 
-def build_graph_and_parks(origin, dist_meters: int, travel_mode="walking"):
-    orig_point = resolve_location(origin)
+def build_graph_and_parks(orig_point, dest_point, dist_meters: int, travel_mode="walking"):
+    center_point = (
+        (orig_point[0] + dest_point[0]) / 2,
+        (orig_point[1] + dest_point[1]) / 2,
+    )
+    endpoint_distance = straight_line_distance_m(orig_point, dest_point)
+    graph_radius = min(float(dist_meters), max(1200.0, endpoint_distance / 2 + 1000.0))
     network_type = "drive" if travel_mode == "driving" else "walk"
-    G = ox.graph_from_point(orig_point, dist=dist_meters, network_type=network_type)
+    G = ox.graph_from_point(center_point, dist=graph_radius, network_type=network_type)
     G = ox.distance.add_edge_lengths(G)
     try:
         G = ox.bearing.add_edge_bearings(G)
@@ -357,8 +372,8 @@ def build_graph_and_parks(origin, dist_meters: int, travel_mode="walking"):
             pass
     G_proj = ox.project_graph(G)
     if travel_mode == "walking":
-        parks_union = get_parks_union(orig_point, dist_meters, G_proj)
-        major_roads_union = get_major_roads_union(orig_point, dist_meters, G_proj)
+        parks_union = get_parks_union(center_point, graph_radius, G_proj)
+        major_roads_union = get_major_roads_union(center_point, graph_radius, G_proj)
     else:
         # Driving features are already available on graph edges. Avoid two large
         # feature downloads so production requests stay within hosted timeouts.
@@ -478,11 +493,11 @@ def compute_route_features(G, G_proj, parks_union, major_roads_union, route, tra
 
 
 def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: int, travel_mode="walking"):
-    G, G_proj, parks_union, major_roads_union = build_graph_and_parks(
-        origin, dist_meters, travel_mode=travel_mode
-    )
     orig_point = resolve_location(origin)
     dest_point = resolve_location(destination)
+    G, G_proj, parks_union, major_roads_union = build_graph_and_parks(
+        orig_point, dest_point, dist_meters, travel_mode=travel_mode
+    )
     orig_node = ox.distance.nearest_nodes(G, X=orig_point[1], Y=orig_point[0])
     dest_node = ox.distance.nearest_nodes(G, X=dest_point[1], Y=dest_point[0])
     routes = generate_diverse_candidate_routes(
