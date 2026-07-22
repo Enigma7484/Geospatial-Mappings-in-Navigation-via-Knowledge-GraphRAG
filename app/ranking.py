@@ -100,6 +100,42 @@ def lexical_rank_route_texts(route_texts: list[str], user_pref: str) -> np.ndarr
     return _minmax(np.asarray(scores, dtype=float))
 
 
+def feature_preference_scores(
+    route_feature_dicts: list[dict[str, Any]], user_pref: str
+) -> np.ndarray | None:
+    preference = user_pref.lower()
+    routes = route_feature_dicts
+    if not routes:
+        return np.asarray([], dtype=float)
+
+    def values(name: str) -> np.ndarray:
+        return np.asarray([float(route.get(name, 0) or 0) for route in routes])
+
+    components: list[tuple[float, np.ndarray]] = []
+    if any(term in preference for term in ("fast", "quick", "time")):
+        components.append((2.0, 1 - _minmax(values("estimated_minutes"))))
+    if any(term in preference for term in ("short", "direct", "distance")):
+        components.append((2.0, 1 - _minmax(values("distance_km"))))
+    if any(term in preference for term in ("highway", "major road", "busy", "traffic", "quiet", "calm")):
+        components.append((2.0, 1 - _minmax(values("major_pct"))))
+    if any(term in preference for term in ("turn", "simple", "easy to follow", "easy-to-follow")):
+        components.append((1.6, 1 - _minmax(values("turns"))))
+    if any(term in preference for term in ("intersection", "simple", "easy to follow", "easy-to-follow")):
+        components.append((1.2, 1 - _minmax(values("intersections"))))
+    if any(term in preference for term in ("park", "green", "scenic", "nature")):
+        components.append((1.8, _minmax(values("park_near_pct"))))
+    if any(term in preference for term in ("residential", "quiet", "calm")):
+        components.append((1.0, _minmax(values("residential_pct"))))
+    if any(term in preference for term in ("safe", "well-lit", "well lit")):
+        components.append((1.5, _minmax(values("safety_score"))))
+
+    if not components:
+        return None
+    total_weight = sum(weight for weight, _ in components)
+    raw = sum(weight * component for weight, component in components) / total_weight
+    return _minmax(raw)
+
+
 def sbert_rank_route_texts(route_texts: list[str], user_pref: str) -> np.ndarray:
     model = get_model()
     emb_routes = model.encode(route_texts, normalize_embeddings=True)
@@ -116,6 +152,7 @@ def _route_payload(route_feature_dicts: list[dict[str, Any]], route_texts: list[
                 "summary": text,
                 "features": {
                     "distance_km": features.get("distance_km"),
+                    "estimated_minutes": features.get("estimated_minutes"),
                     "major_pct": features.get("major_pct"),
                     "walk_pct": features.get("walk_pct"),
                     "residential_pct": features.get("residential_pct"),
@@ -253,5 +290,9 @@ def rank_route_texts(
             route_feature_dicts = [{"summary": text} for text in route_texts]
         return gemini_rank_routes(route_feature_dicts, route_texts, user_pref)
     if ranker == "lexical":
+        if route_feature_dicts is not None:
+            feature_scores = feature_preference_scores(route_feature_dicts, user_pref)
+            if feature_scores is not None:
+                return feature_scores
         return lexical_rank_route_texts(route_texts, user_pref)
     return sbert_rank_route_texts(route_texts, user_pref)

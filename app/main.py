@@ -82,6 +82,7 @@ def rank_routes(payload: RankRoutesRequest):
         destination=payload.destination,
         dist_meters=payload.dist_meters,
         k_routes=payload.k_routes,
+        travel_mode=payload.travel_mode,
     )
 
     if not route_feature_dicts:
@@ -150,6 +151,7 @@ def rank_routes(payload: RankRoutesRequest):
                 profile_score=float(profile_scores[idx]) if profile_scores is not None else None,
                 sbert_score=float(sbert_scores[idx]) if sbert_scores is not None else None,
                 distance_km=feat["distance_km"],
+                estimated_minutes=feat["estimated_minutes"],
                 major_pct=feat["major_pct"],
                 walk_pct=feat["walk_pct"],
                 residential_pct=feat["residential_pct"],
@@ -174,6 +176,7 @@ def rank_routes(payload: RankRoutesRequest):
         preference=payload.preference,
         user_id=payload.user_id,
         ranking_mode=payload.ranking_mode,
+        travel_mode=payload.travel_mode,
         context=context,
         profile_summary=profile_summary,
         routes=routes,

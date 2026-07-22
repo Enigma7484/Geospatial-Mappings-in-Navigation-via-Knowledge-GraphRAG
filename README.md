@@ -9,7 +9,7 @@ This is not a clean per-user trajectory product yet. Public OSM GPS traces are t
 ## Current Focus
 
 - FastAPI backend for `/rank-routes`.
-- OSMnx-based walking-route candidate generation.
+- OSMnx-based walking and driving route-candidate generation.
 - Route feature extraction from OSM tags and geometry.
 - OSM public GPS trackpoint probing and pseudo-segmentation.
 - Approximate map matching from public trackpoints to OSM routes.
@@ -137,9 +137,13 @@ Example `/rank-routes` request:
   "request_datetime": "2023-10-16T13:25:18+00:00",
   "dist_meters": 4000,
   "k_routes": 5,
-  "ranking_mode": "hybrid"
+  "ranking_mode": "hybrid",
+  "travel_mode": "walking"
 }
 ```
+
+Set `travel_mode` to `driving` to generate routes from the drivable street
+network, respect one-way access, and return mode-aware travel-time estimates.
 
 The API now defaults to the current OSM pseudo-history file:
 

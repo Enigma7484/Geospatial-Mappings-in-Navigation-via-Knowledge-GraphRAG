@@ -11,6 +11,7 @@ class RankRoutesRequest(BaseModel):
     dist_meters: int = 4000
     k_routes: int = 5
     ranking_mode: Literal["prompt", "profile", "hybrid"] = "profile"
+    travel_mode: Literal["walking", "driving"] = "walking"
 
 
 class RouteResponse(BaseModel):
@@ -19,6 +20,7 @@ class RouteResponse(BaseModel):
     profile_score: Optional[float] = None
     sbert_score: Optional[float] = None
     distance_km: float
+    estimated_minutes: int
     major_pct: float
     walk_pct: float
     residential_pct: float
@@ -37,11 +39,12 @@ class RouteResponse(BaseModel):
 
 
 class RankRoutesResponse(BaseModel):
-    origin: str
-    destination: str
+    origin: Any
+    destination: Any
     preference: Optional[str] = None
     user_id: Optional[str] = None
     ranking_mode: str
+    travel_mode: str
     context: Dict[str, Any]
     profile_summary: Optional[str] = None
     routes: List[RouteResponse]

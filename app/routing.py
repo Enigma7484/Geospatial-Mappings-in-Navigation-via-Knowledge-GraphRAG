@@ -64,8 +64,43 @@ def get_edge_by_key_or_min(GX, u, v, key=None):
     return min(ed.values(), key=lambda d: d.get("length", float("inf")))
 
 
-def annotate_edge_generation_costs(G, G_proj, parks_union):
-    major_set = {"primary", "secondary", "tertiary", "trunk", "primary_link", "secondary_link", "tertiary_link", "trunk_link"}
+def estimate_edge_speed_kph(data):
+    raw_speed = data.get("maxspeed")
+    if isinstance(raw_speed, list):
+        raw_speed = raw_speed[0] if raw_speed else None
+    if raw_speed is not None:
+        try:
+            value = str(raw_speed).lower().split(";")[0].strip()
+            speed = float("".join(char for char in value if char.isdigit() or char == "."))
+            if "mph" in value:
+                speed *= 1.60934
+            if speed > 0:
+                return speed
+        except (TypeError, ValueError):
+            pass
+
+    highway = normalize_highway_tag(data.get("highway"))
+    defaults = {
+        "motorway": 90,
+        "motorway_link": 55,
+        "trunk": 70,
+        "trunk_link": 50,
+        "primary": 50,
+        "primary_link": 40,
+        "secondary": 45,
+        "secondary_link": 35,
+        "tertiary": 40,
+        "tertiary_link": 30,
+        "residential": 30,
+        "living_street": 15,
+        "service": 20,
+    }
+    return defaults.get(highway, 30)
+
+
+def annotate_edge_generation_costs(G, G_proj, parks_union, travel_mode="walking"):
+    major_set = {"motorway", "motorway_link", "primary", "secondary", "tertiary", "trunk", "primary_link", "secondary_link", "tertiary_link", "trunk_link"}
+    highway_set = {"motorway", "motorway_link", "trunk", "trunk_link"}
     walk_set = {"footway", "path", "pedestrian", "steps", "living_street", "cycleway", "track"}
     residential_set = {"residential", "unclassified"}
     service_set = {"service"}
@@ -93,6 +128,8 @@ def annotate_edge_generation_costs(G, G_proj, parks_union):
             scenic_cost *= 1.35
         if hwy in service_set:
             scenic_cost *= 1.08
+        if travel_mode == "driving" and hwy in highway_set:
+            scenic_cost *= 1.25
 
         safe_cost = length
         lit = data.get("lit", None)
@@ -113,21 +150,36 @@ def annotate_edge_generation_costs(G, G_proj, parks_union):
             safe_cost *= 1.40
         if hwy in service_set:
             safe_cost *= 1.12
+        if travel_mode == "driving" and hwy in highway_set:
+            safe_cost *= 1.20
 
         target_deg = G.degree[v] if v in G.nodes else 2
         simple_cost = length + max(target_deg - 2, 0) * 12.0
-        if highway_matches(data.get("highway"), major_set):
+        if travel_mode == "walking" and highway_matches(data.get("highway"), major_set):
             simple_cost += 18.0
         if hwy in service_set:
             simple_cost += 10.0
         if hwy in residential_set:
             simple_cost -= 4.0
-        if hwy in walk_set:
+        if travel_mode == "walking" and hwy in walk_set:
             simple_cost -= 6.0
+
+        speed_kph = 4.8 if travel_mode == "walking" else estimate_edge_speed_kph(data) * 0.72
+        travel_time = length / max(speed_kph * 1000 / 3600, 0.1)
+        efficient_cost = length
+        if travel_mode == "driving":
+            if hwy in residential_set:
+                efficient_cost *= 1.08
+            if hwy in service_set:
+                efficient_cost *= 1.20
+        else:
+            efficient_cost = travel_time
 
         data["scenic_weight"] = max(1.0, scenic_cost)
         data["safe_weight"] = max(1.0, safe_cost)
         data["simple_weight"] = max(1.0, simple_cost)
+        data["travel_time"] = max(0.1, travel_time)
+        data["efficient_weight"] = max(1.0, efficient_cost)
 
 
 def interleave_unique_route_lists(route_lists, max_routes):
@@ -146,10 +198,13 @@ def interleave_unique_route_lists(route_lists, max_routes):
     return out
 
 
-def generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes):
+def generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes, travel_mode="walking"):
     per_mode_k = max(k_routes, 4)
     route_pools = []
-    for weight_name in ["length", "scenic_weight", "safe_weight", "simple_weight"]:
+    weights = ["length", "scenic_weight", "safe_weight", "simple_weight"]
+    if travel_mode == "driving":
+        weights = ["travel_time", "efficient_weight", "simple_weight", "scenic_weight", "safe_weight"]
+    for weight_name in weights:
         try:
             routes = list(ox.k_shortest_paths(G, orig_node, dest_node, k=per_mode_k, weight=weight_name))
             route_pools.append(routes)
@@ -254,6 +309,8 @@ def get_parks_union(origin_point, dist_meters, G_proj):
 
 def get_major_roads_union(origin_point, dist_meters, G_proj):
     major_set = {
+        "motorway",
+        "motorway_link",
         "primary",
         "secondary",
         "tertiary",
@@ -286,9 +343,10 @@ def get_major_roads_union(origin_point, dist_meters, G_proj):
         return roads_proj.geometry.unary_union
 
 
-def build_graph_and_parks(origin, dist_meters: int):
+def build_graph_and_parks(origin, dist_meters: int, travel_mode="walking"):
     orig_point = resolve_location(origin)
-    G = ox.graph_from_point(orig_point, dist=dist_meters, network_type="walk")
+    network_type = "drive" if travel_mode == "driving" else "walk"
+    G = ox.graph_from_point(orig_point, dist=dist_meters, network_type=network_type)
     G = ox.distance.add_edge_lengths(G)
     try:
         G = ox.bearing.add_edge_bearings(G)
@@ -298,18 +356,24 @@ def build_graph_and_parks(origin, dist_meters: int):
         except Exception:
             pass
     G_proj = ox.project_graph(G)
-    parks_union = get_parks_union(orig_point, dist_meters, G_proj)
-    major_roads_union = get_major_roads_union(orig_point, dist_meters, G_proj)
-    annotate_edge_generation_costs(G, G_proj, parks_union)
+    if travel_mode == "walking":
+        parks_union = get_parks_union(orig_point, dist_meters, G_proj)
+        major_roads_union = get_major_roads_union(orig_point, dist_meters, G_proj)
+    else:
+        # Driving features are already available on graph edges. Avoid two large
+        # feature downloads so production requests stay within hosted timeouts.
+        parks_union = None
+        major_roads_union = None
+    annotate_edge_generation_costs(G, G_proj, parks_union, travel_mode=travel_mode)
     return G, G_proj, parks_union, major_roads_union
 
 
-def compute_route_features(G, G_proj, parks_union, major_roads_union, route):
+def compute_route_features(G, G_proj, parks_union, major_roads_union, route, travel_mode="walking"):
     edges = route_edge_data_min_len(G, route)
     edges_proj = route_edge_data_min_len(G_proj, route)
     total_len = major_m = walk_m = residential_m = service_m = 0.0
     hwy_counts = Counter()
-    major_set = {"primary", "secondary", "tertiary", "trunk", "primary_link", "secondary_link", "tertiary_link", "trunk_link"}
+    major_set = {"motorway", "motorway_link", "primary", "secondary", "tertiary", "trunk", "primary_link", "secondary_link", "tertiary_link", "trunk_link"}
     walk_set = {"footway", "path", "pedestrian", "steps", "living_street", "cycleway", "track"}
     residential_set = {"residential", "unclassified"}
     service_set = {"service"}
@@ -373,9 +437,20 @@ def compute_route_features(G, G_proj, parks_union, major_roads_union, route):
     min_park_dist = None if min_park_dist == float("inf") else float(min_park_dist)
     safety = safety_proxy_features(G, G_proj, route, total_len, major_pct, service_pct, walk_pct, residential_pct)
     top_types = ", ".join([t for t, _ in hwy_counts.most_common(5)])
+    estimated_seconds = sum(float(edge.get("travel_time", 0.0) or 0.0) for edge in edges if edge)
+    if estimated_seconds <= 0:
+        fallback_kph = 4.8 if travel_mode == "walking" else 30.0
+        estimated_seconds = total_len / max(fallback_kph * 1000 / 3600, 0.1)
+    if travel_mode == "driving":
+        estimated_seconds += intersections * 4 + safety["signal_cnt"] * 18 + turns * 3
+    estimated_minutes = max(1, int(round(estimated_seconds / 60)))
+    mode_label = "Walking" if travel_mode == "walking" else "Driving"
+    access_description = (
+        f"{walk_pct:.1f}% on footpaths. " if travel_mode == "walking" else ""
+    )
     summary = (
-        f"Walking route of {total_len/1000:.2f} km. Top ways: {top_types}. "
-        f"{walk_pct:.1f}% on footpaths. {residential_pct:.1f}% residential streets. "
+        f"{mode_label} route of {total_len/1000:.2f} km, about {estimated_minutes} minutes. Top ways: {top_types}. "
+        f"{access_description}{residential_pct:.1f}% residential streets. "
         f"{service_pct:.1f}% service roads. {major_pct:.1f}% major roads. "
         f"Approx {intersections} intersections and {turns} turns. "
         f"{park_near_pct:.1f}% near parks, closest park {min_park_dist if min_park_dist is not None else -1:.0f}m. "
@@ -383,6 +458,7 @@ def compute_route_features(G, G_proj, parks_union, major_roads_union, route):
     )
     return {
         "distance_km": float(total_len / 1000),
+        "estimated_minutes": estimated_minutes,
         "major_pct": float(major_pct),
         "walk_pct": float(walk_pct),
         "residential_pct": float(residential_pct),
@@ -401,16 +477,22 @@ def compute_route_features(G, G_proj, parks_union, major_roads_union, route):
     }
 
 
-def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: int):
-    G, G_proj, parks_union, major_roads_union = build_graph_and_parks(origin, dist_meters)
+def generate_rankable_routes(origin, destination, dist_meters: int, k_routes: int, travel_mode="walking"):
+    G, G_proj, parks_union, major_roads_union = build_graph_and_parks(
+        origin, dist_meters, travel_mode=travel_mode
+    )
     orig_point = resolve_location(origin)
     dest_point = resolve_location(destination)
     orig_node = ox.distance.nearest_nodes(G, X=orig_point[1], Y=orig_point[0])
     dest_node = ox.distance.nearest_nodes(G, X=dest_point[1], Y=dest_point[0])
-    routes = generate_diverse_candidate_routes(G, orig_node, dest_node, k_routes)
+    routes = generate_diverse_candidate_routes(
+        G, orig_node, dest_node, k_routes, travel_mode=travel_mode
+    )
     route_feature_dicts, route_texts = [], []
     for route in routes:
-        feat = compute_route_features(G, G_proj, parks_union, major_roads_union, route)
+        feat = compute_route_features(
+            G, G_proj, parks_union, major_roads_union, route, travel_mode=travel_mode
+        )
         route_feature_dicts.append(feat)
         route_texts.append(feat["summary"])
     return route_feature_dicts, route_texts
